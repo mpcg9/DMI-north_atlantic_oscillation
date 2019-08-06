@@ -13,4 +13,4 @@ naonoaalong = naonoaalong(:);
 naodmishort(naodmishort == -99.99) = NaN;
 naonoaalong(naonoaalong == -99.99) = NaN;
 
-save('../data_NAO.mat', 'naodmishort', 'naonoaalong');
+save('../binary_data/data_NAO.mat', 'naodmishort', 'naonoaalong');

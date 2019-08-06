@@ -1,3 +1,4 @@
 *.mat 
 /tools
 /binary_data
+*.~lock.*

@@ -1,0 +1,1 @@
+# How to download data from CMIP6

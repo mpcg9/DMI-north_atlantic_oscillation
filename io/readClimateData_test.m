@@ -1,5 +1,6 @@
 clc, clear, close all;
 addpath(genpath(cd));
+addpath(genpath('../toolboxes'));
 data = readNetCDF2('../binary_data/NetCDF/ta_Amon_EC-Earth3_historical_r1i1p1f1_gr_201201-201212.nc');
 
 disp(size(data.ta)); % To find out the dimensions of data.ta. 
@@ -13,3 +14,9 @@ disp(size(data.ta)); % To find out the dimensions of data.ta.
 %
 % ta_Amon_EC-Earth3_historical_r1i1p1f1_gr_201201-201212.nc: [Lon, Lat, Elev, Time], (512, 256, 19, 12)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Let's do a plot (just for testing)
+m_proj('orthographic');
+m_image(data.lon, data.lat, data.ta(:,:,3,1)'); %January, Height 850hPa
+m_coast('linewidth', 1, 'color', 'black');
+m_grid;

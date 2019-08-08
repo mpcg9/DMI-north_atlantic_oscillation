@@ -16,7 +16,10 @@ disp(size(data.ta)); % To find out the dimensions of data.ta.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Let's do a plot (just for testing)
+ta = data.ta(:,:,3,1)';
+ta = [ta(:, 257:end), ta(:, 1:256)];
+lon = data.lon - 180;
 m_proj('orthographic');
-m_image(data.lon, data.lat, data.ta(:,:,3,1)'); %January, Height 850hPa
+m_image(lon, data.lat, ta); %January, Height 850hPa
 m_coast('linewidth', 1, 'color', 'black');
 m_grid;

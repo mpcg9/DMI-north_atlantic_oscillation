@@ -1,8 +1,6 @@
-clc, clear, close all;
-addpath(genpath(cd));
-addpath(genpath('../toolboxes'));
-data = readNetCDF2('../binary_data/NetCDF/ta_Amon_EC-Earth3_historical_r1i1p1f1_gr_201201-201212.nc');
-
+%% Find information
+[file, path] =  uigetfile('*.mat', 'Please select file to read');
+load(strcat(path,file));
 disp(size(data.ta)); % To find out the dimensions of data.ta. 
 % This information can be used together with the dimension data of time,
 % latitude, longitude and elevation to find out which dimension of data.ta 
@@ -13,10 +11,32 @@ disp(size(data.ta)); % To find out the dimensions of data.ta.
 % <File>: [Order of dimensions], (dimension of dimensions)
 %
 % ta_Amon_EC-Earth3_historical_r1i1p1f1_gr_201201-201212.nc: [Lon, Lat, Elev, Time], (512, 256, 19, 12)
+% ta_Amon_GISS-E2-1-H_abrupt-4xCO2_r1i1p1f1_gn_195101-200012.nc: [Lon, Lat, Elev, Time], (144, 90, 19, 600)
+% psl_Amon_MIROC6_amip_r1i1p1f1_gn_197901-201412.nc: [Lon, Lat, Time], (256, 128, 432) 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%% Some more fun
+keyboard;
+
 % Let's do a plot (just for testing)
+addpath(genpath('../toolboxes'));
+ta = data.ta(:,:,2,1)'; %January, Height 850hPa
+ta = [ta(:, 257:end), ta(:, 1:256)];
+lon = data.lon - 180;
+lat = data.lat;
+
+% cut out greenland (optional)
+if false
+    lat_bound_lo = 210;
+    lat_bound_hi = 250;
+    lon_bound_lo = 145;
+    lon_bound_hi = 250;
+lat = lat(lat_bound_lo:lat_bound_hi);
+lon = lon(lon_bound_lo:lon_bound_hi);
+ta = ta(lat_bound_lo:lat_bound_hi, lon_bound_lo:lon_bound_hi);
+end
+
 m_proj('orthographic');
-m_image(data.lon, data.lat, data.ta(:,:,3,1)'); %January, Height 850hPa
+m_image(lon, lat, ta); 
 m_coast('linewidth', 1, 'color', 'black');
 m_grid;

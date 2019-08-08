@@ -5,6 +5,7 @@ addpath(genpath('../toolboxes'));
 data = readNetCDF2(strcat(path,file));
 
 %% Find information
+keyboard;
 disp(size(data.ta)); % To find out the dimensions of data.ta. 
 % This information can be used together with the dimension data of time,
 % latitude, longitude and elevation to find out which dimension of data.ta 
@@ -19,6 +20,8 @@ disp(size(data.ta)); % To find out the dimensions of data.ta.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Some more fun
+keyboard;
+
 % Let's do a plot (just for testing)
 ta = data.ta(:,:,3,1)'; %January, Height 850hPa
 ta = [ta(:, 257:end), ta(:, 1:256)];

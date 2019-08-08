@@ -12,6 +12,7 @@ disp(size(data.ta)); % To find out the dimensions of data.ta.
 %
 % ta_Amon_EC-Earth3_historical_r1i1p1f1_gr_201201-201212.nc: [Lon, Lat, Elev, Time], (512, 256, 19, 12)
 % ta_Amon_GISS-E2-1-H_abrupt-4xCO2_r1i1p1f1_gn_195101-200012.nc: [Lon, Lat, Elev, Time], (144, 90, 19, 600)
+% psl_Amon_MIROC6_amip_r1i1p1f1_gn_197901-201412.nc: [Lon, Lat, Time], (256, 128, 432) 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Some more fun

@@ -1,12 +1,6 @@
-clc, clear, close all;
-addpath(genpath(cd));
-addpath(genpath('../toolboxes'));
-[file, path] = uigetfile('*.nc', 'Please select file to read');
-data = readNetCDF2(strcat(path,file));
-save(strcat(path, '../mat_files', file, '.mat'), 'data');
-
 %% Find information
-keyboard;
+[file, path] =  uigetfile('*.mat', 'Please select file to read');
+load(strcat(path,file));
 disp(size(data.ta)); % To find out the dimensions of data.ta. 
 % This information can be used together with the dimension data of time,
 % latitude, longitude and elevation to find out which dimension of data.ta 
@@ -24,6 +18,7 @@ disp(size(data.ta)); % To find out the dimensions of data.ta.
 keyboard;
 
 % Let's do a plot (just for testing)
+addpath(genpath('../toolboxes'));
 ta = data.ta(:,:,2,1)'; %January, Height 850hPa
 ta = [ta(:, 257:end), ta(:, 1:256)];
 lon = data.lon - 180;

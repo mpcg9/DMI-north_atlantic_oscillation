@@ -1,0 +1,6 @@
+                                                                                  
+         source                       provider              time range    rate     file name 
+https://www.cpc.ncep.noaNational Weather Service/Climate Pre1950-2019  monthly    nao_1.data 
+ftp://ftp.cpc.ncep.noaa.National Weather Service/Climate Pre1950-2019  daily      nao_4.data 
+https://crudata.uea.ac.uClimate Research Unit, University of1821-2019  monthly    nao_2.data 
+https://climatedataguideNational Center for Atmospheric Rese1865-2017  yearly     nao_3.data 

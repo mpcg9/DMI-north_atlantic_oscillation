@@ -1,9 +1,14 @@
-function [ data_converted ] = convert_longitudes( data, lon_min)
+function [ data_converted, lon_idx] = convert_longitudes( data, lon_min )
 %CONVERT_LONGITUDES Changes the range of longitudes
 %   This method wraps longitudes to a certain range. lon_min defines the
 %   easternmost coordinate possible before wrapping back to coordinates
 %   west (e.g. if lon_min is set to -90, all resulting coordinates will lie
 %   in a range of [-90 270)).
+%
+%   If you want to do multiple conversions using the same grid, you can use
+%   lon_idx to do so more efficiently (e.g. you can use
+%   this_is_some_data(lon_idx, :, :, :) together with the output longitudes
+%   of this function).
 
 lon_max = lon_min + 360;
 data.lon = mod(data.lon, 360);
@@ -23,7 +28,7 @@ end
 
 data_fields = fieldnames(data);
 l = length(data_fields);
-data_subset = struct;
+data_converted = struct;
 for fieldnum = 1:l
     fieldname = data_fields{fieldnum};
     fieldval = getfield(data, fieldname);
@@ -34,11 +39,11 @@ for fieldnum = 1:l
             strcmp(fieldname,'lat') ||...
             strcmp(fieldname,'lat_bnds') ||...
             strcmp(fieldname,'lon')
-                data_subset = setfield(data_subset, fieldname, fieldval);
+                data_converted = setfield(data_converted, fieldname, fieldval);
     elseif  strcmp(fieldname,'lon_bnds')
-                data_subset = setfield(data_subset, fieldname, fieldval(:,lon_idx));
+                data_converted = setfield(data_converted, fieldname, fieldval(:,lon_idx));
     else
-                data_subset = setfield(data_subset, fieldname, fieldval(lon_idx, :, :, :));
+                data_converted = setfield(data_converted, fieldname, fieldval(lon_idx, :, :, :));
     end
 end
 

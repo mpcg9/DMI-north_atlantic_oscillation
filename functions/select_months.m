@@ -7,8 +7,9 @@ function [ data_subset ] = select_months( data, months )
 
 time_length = length(data.time);
 assert(mod(time_length, 12) == 0);
+assert(length(months) == 12);
 num_years = time_length/12;
-time_idx = repmat(months, 1, num_years);
+time_idx = repmat(logical(months), 1, num_years);
 
 % copy data
 data_fields = fieldnames(data);

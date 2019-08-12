@@ -1,0 +1,87 @@
+
+%% 0. settings
+clearvars; close all; clc;
+f = filesep;
+addpath(genpath(cd), genpath(['..' f 'data' f 'nao']));
+
+%% 1. load files
+nao_1 = load('nao_1.data');
+nao_2 = load('nao_2.data');
+
+%% 2. reshape nao_1
+% matrix to vector
+nao_1_re = reshape(nao_1',[],1); 
+% kick out the year dates in between
+k = 1; j = 1;
+while k < length(nao_1_re)
+    if nao_1_re(k) > 1000
+        year1(j) = nao_1_re(k);
+        nao_1_re(k) = [];
+        j = j + 1;
+    end
+    k = k + 1;
+end
+% create a corresponding year vector
+m = 1;
+for k = year1(1) : year1(end)
+   for j = 1:12
+      year2(m,1) = k;
+      m = m + 1;
+   end
+end
+% create a corresponding month vector
+month = [1:12]'; month = repmat(month,length(year1),1);
+% kick out the -99.00 at the end
+nao_1_re(906:end) = []; year2(906:end) = []; month(906:end) = [];
+% put everything together
+nao_1_fin = [year2 month nao_1_re];
+
+clear f month nao_1 nao_1_re year1 year2
+
+%% 3. reshape nao_2
+% matrix to vector
+nao_2_re = reshape(nao_2',[],1); 
+% kick out the year dates in between
+k = 1; j = 1;
+while k < length(nao_2_re)
+    if nao_2_re(k) > 1000
+        year1(j) = nao_2_re(k);
+        nao_2_re(k) = [];
+        j = j + 1;
+    end
+    k = k + 1;
+end
+% create a corresponding year vector
+m = 1;
+for k = year1(1) : year1(end)
+   for j = 1:12
+      year2(m,1) = k;
+      m = m + 1;
+   end
+end
+% create a corresponding month vector
+month = [1:12]'; month = repmat(month,length(year1),1);
+% replace -99.00 by NaN
+nao_2_re(nao_2_re == -99.99) = NaN;
+% put everything together
+nao_2_fin = [year2 month nao_2_re];
+
+clear f month nao_2 nao_2_re year1 year2
+
+%% 4. NAO data plots
+% nur zum kucken, gibts ja eigentlich schon genug...
+figure; stem(nao_2_fin(:,3), '.r', 'MarkerSize',0.1);
+title('NAO data set 2 (ClimateResearch Unit)');
+% ### axis labels don't work
+% set(gca,'XTick',[nao_2_fin(1) : length(nao_2_fin) : nao_2_fin(end)]);
+ax = gca;
+ax.XTick = [nao_2_fin(1) : length(nao_2_fin)/12 : nao_2_fin(end)];
+
+%% 5. NAO maps
+% ... what?
+
+
+
+
+
+

@@ -10,9 +10,6 @@ function data=readNetCDF2(filename)
 % which is included inside the data struct.
 %
 % Uebbing 06/2016
-if nargin < 1
-    filename = '/Users/lennart/sciebo/M28_Global_Drifter_Program_data/1h_data/driftertrajGPS_1.02.nc';
-end
 
 ncid = netcdf.open(filename, 'NC_NOWRITE'); % oeffnen der Datei
 

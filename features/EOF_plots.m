@@ -4,6 +4,7 @@
 %% Preparation
 clc, clear, close all;
 addpath(genpath('../functions'));
+addpath(genpath('../toolboxes'));
 
 % Information: all *.mat-files in the selected folder will have to contain
 % a data variable and will be evaluated as well!

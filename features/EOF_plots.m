@@ -16,7 +16,7 @@ folderContents = dir(strcat(path, '*.mat'));
 %% Settings
 Bounds_lat = [30, 85]; % Boundaries for latitude [in degrees]
 Bounds_lon = [-80, 10]; % Boundaries for longitude [in degrees]
-Months = [1 1 0 0 0 0  0 0 0 0 0 1]; % Months to be evaluated [J F M A M J  J A S O N D] - Warning: only works if data starts on a January and stops on a December!
+Months = [0 0 0 0 0 1  1 1 0 0 0 0]; % Months to be evaluated [J F M A M J  J A S O N D] - Warning: only works if data starts on a January and stops on a December!
 noEOFs = 3; % Number of EOFs to calculate.
 averageData = true; % Set to true if you wish to calculate the averages for all grid points over time and substract it from the data
 plotEigenvalues = true; % Set to true if you wish to compute and plot the eigenvalues for the EOF components calculated

@@ -1,3 +1,4 @@
+%% Preparation
 clc, clear, close all;
 [file, path] = uigetfile({'*.nc', 'NetCDF2-File (*.nc)'}, 'Please select one file to read. All files will be added automatically');
 % ATTENTION! Do not use different Variables!
@@ -6,11 +7,25 @@ addpath('./scripts');
 addpath('../functions');
 folderContents = dir(strcat(path, '*.nc'));
 
+%% Settings
+use_boundaries = true;
+Bounds_lat = [60 80]; % Boundaries for latitude [in degrees]
+Bounds_lon = [-80 -20]; % Boundaries for longitude [in degrees]
+reduce_height_dimension = 3; % Set to zero if you wish to keep all dimensions in data or if there is only a 2D-grid. If you only wish to keep one height, set this number to the height index you want to read
+
+%% Ingestion
+
 % Find out dimensions and variable
 dataParts = cell(size(folderContents, 1), 1);
 dataParts{1} = readNetCDF2(strcat(path,folderContents(1).name));
+if use_boundaries
+    dataParts{1} = select_subset(dataParts{1}, Bounds_lat(1), Bounds_lat(2), Bounds_lon(1), Bounds_lon(2));
+end
 varn = getVariableName(dataParts{1});
-dataDimensions = size(dataParts{i}.(varn));
+dataDimensions = size(dataParts{1}.(varn));
+if reduce_height_dimension ~= 0
+    dataParts{1}.(varn) = dataParts{1}.(varn)(:, :, reduce_height_dimension, :);
+end
 dataLength = 0;
 dataLength = dataLength + dataDimensions(end);
 numDimensions = length(dataDimensions);
@@ -18,6 +33,12 @@ dataDimensions = dataDimensions(1:end-1);
 
 for i = 2:size(folderContents, 1)
     dataParts{i} = readNetCDF2(strcat(path,folderContents(i).name));
+    if use_boundaries
+        dataParts{i} = select_subset(dataParts{i}, Bounds_lat(1), Bounds_lat(2), Bounds_lon(1), Bounds_lon(2));
+    end
+    if reduce_height_dimension ~= 0
+        dataParts{i}.(varn) = dataParts{i}.(varn)(:, :, reduce_height_dimension, :);
+    end
     dataLength = dataLength + size(dataParts{i}.(varn), numDimensions);
 end
 

@@ -19,6 +19,7 @@ Months = [1 1 0 0 0 0  0 0 0 0 0 1]; % Months to be evaluated [J F M A M J  J A 
 noEOFs = 3; % Number of EOFs to calculate.
 averageData = true; % Set to true if you wish to calculate the averages for all grid points over time and substract it from the data
 plotEigenvalues = true; % Set to true if you wish to compute and plot the eigenvalues for the EOF components calculated
+numPlotColumns = 2; % Set to the number of columns you wish to get in the resulting .ps file.
 projectionType = 'lambert'; % Select projection to use for plots
 variableName = 'psl'; % Select variable
 
@@ -48,27 +49,32 @@ for i = 1:size(folderContents, 1)
     clear data;
     [temp_struct, lon_idx] = convert_longitudes(temp_struct, min(Bounds_lon));
     
+    figure('Visible','off', 'Name', folderContents(i).name);
     for j = 1:noEOFs
         % Reshape EOF values
         z = reshape(V(:,j), datasize(1), datasize(2));
         temp_struct.z = z(lon_idx, :); % Remember that we have resorted longitudes!
         
         % create plot
-        figure('Visible','off', 'Name', strcat(folderContents(i).name, ': EOF-', num2str(j)));
+        subplot(ceil((noEOFs + plotEigenvalues)/2), 2, j);
+        climval = max([max(V(:,j)), - min(V(:,j))]); % Set colormap to be zero-centered
+        caxis([-climval climval]);
+        colormap('jet');
         m_proj(projectionType, 'long', Bounds_lon, 'lat', Bounds_lat);
         m_image(temp_struct.lon, temp_struct.lat, temp_struct.z');
         m_coast('linewidth', 1, 'color', 'black');
         m_grid;
         title(strcat(folderContents(i).name, ': EOF-', num2str(j)), 'Interpreter', 'none');
-        colorbar; 
+        colorbar('southoutside'); 
         % You might want to add more things here for plotting
         
-        % save plots to postscript file (can be easily converted to pdf, is the only format with -append option available)
-        if noPlot == 1
-            print(strcat(s_path, s_file), '-dpsc');
-        else
-            print(strcat(s_path, s_file), '-dpsc', '-append');
-        end
-        noPlot = noPlot + 1;
     end
+    
+    % save plots to postscript file (can be easily converted to pdf, is the only format with -append option available)
+    if noPlot == 1
+        print(strcat(s_path, s_file), '-dpsc', '-fillpage');
+    else
+        print(strcat(s_path, s_file), '-dpsc', '-fillpage', '-append');
+    end
+    noPlot = noPlot + 1;
 end

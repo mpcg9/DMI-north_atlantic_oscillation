@@ -15,16 +15,26 @@ end
 lon_min = mod(lon_min, 360);
 lon_max = mod(lon_max, 360);
 
-
 % Find out the indices of the subset
-if lon_max > lon_min
-    lon_idx = lon_min < data.lon_bnds(2,:) & lon_max > data.lon_bnds(1,:);
-elseif lon_max < lon_min
-    lon_idx = lon_min < data.lon_bnds(2,:) | lon_max > data.lon_bnds(1,:);
-else
-    lon_idx = true(size(data.lon));
+if isfield(data, 'lon_bnds') && isfield(data, 'lat_bnds')
+    if lon_max > lon_min
+        lon_idx = lon_min < data.lon_bnds(2,:) & lon_max > data.lon_bnds(1,:);
+    elseif lon_max < lon_min
+        lon_idx = lon_min < data.lon_bnds(2,:) | lon_max > data.lon_bnds(1,:);
+    else
+        lon_idx = true(size(data.lon));
+    end
+    lat_idx = lat_min <= data.lat_bnds(2,:) & lat_max >= data.lat_bnds(1,:);
+else % CNRM data is weird
+    if lon_max > lon_min
+        lon_idx = lon_min < data.lon & lon_max > data.lon;
+    elseif lon_max < lon_min
+        lon_idx = lon_min < data.lon | lon_max > data.lon;
+    else
+        lon_idx = true(size(data.lon));
+    end
+    lat_idx = lat_min <= data.lat & lat_max >= data.lat;
 end
-lat_idx = lat_min <= data.lat_bnds(2,:) & lat_max >= data.lat_bnds(1,:);
 
 % copy data
 data_fields = fieldnames(data);
@@ -35,16 +45,19 @@ for fieldnum = 1:l
     fieldval = getfield(data, fieldname);
     if      strcmp(fieldname,'time') ||...
             strcmp(fieldname,'time_bnds') ||...
+            strcmp(fieldname,'time_bounds') ||...
             strcmp(fieldname,'plev') ||...
             strcmp(fieldname,'units')
                 data_subset = setfield(data_subset, fieldname, fieldval);
     elseif  strcmp(fieldname,'lat')
                 data_subset = setfield(data_subset, fieldname, fieldval(lat_idx));
-    elseif  strcmp(fieldname,'lat_bnds')
+    elseif  strcmp(fieldname,'lat_bnds') ||...
+            strcmp(fieldname,'lat_bounds')
                 data_subset = setfield(data_subset, fieldname, fieldval(:,lat_idx));
     elseif  strcmp(fieldname,'lon')
                 data_subset = setfield(data_subset, fieldname, fieldval(lon_idx));
-    elseif  strcmp(fieldname,'lon_bnds')
+    elseif  strcmp(fieldname,'lon_bnds') ||...
+            strcmp(fieldname,'lon_bounds')
                 data_subset = setfield(data_subset, fieldname, fieldval(:,lon_idx));
     else
                 data_subset = setfield(data_subset, fieldname, fieldval(lon_idx, lat_idx, :, :));

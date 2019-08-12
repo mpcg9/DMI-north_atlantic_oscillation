@@ -27,7 +27,7 @@ for k = 1:2
     temp_struct.lat = data.lat;
     [temp_struct, lon_idx] = convert_longitudes(temp_struct, -180);
     if k == 1
-        figure('Name', 'EOF analysis for winter mmonths');
+        figure('Name', 'EOF analysis for winter months');
     else
         figure('Name', 'EOF analysis for summer months');
     end
@@ -46,6 +46,9 @@ for k = 1:2
     subplot(2,3,i+1);
     semilogy(eigenvalues);
     title('Eigenvalues');
+    %figure;
+    %time_series = U*S;
+    %plot(time_series(:,1)');
 end
 
 

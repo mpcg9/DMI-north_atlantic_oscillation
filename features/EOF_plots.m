@@ -14,15 +14,18 @@ folderContents = dir(strcat(path, '*.mat'));
 [s_file, s_path] = uiputfile({'.ps', 'Postscript Level 3 File (*.ps)'}, 'Save plots as...', strcat(path, 'plots.ps'));
 
 %% Settings
-Bounds_lat = [30, 85]; % Boundaries for latitude [in degrees]
-Bounds_lon = [-80, 10]; % Boundaries for longitude [in degrees]
-Months = [0 0 0 0 1 1  1 0 0 0 0 0]; % Months to be evaluated [J F M A M J  J A S O N D] - Warning: only works if data starts on a January and stops on a December!
+Bounds_lat = [20, 85]; % Boundaries for latitude [in degrees]
+Bounds_lon = [-90, 40]; % Boundaries for longitude [in degrees]
+Months = [1 1 0 0 0 0  0 0 0 0 0 1]; % Months to be evaluated [J F M A M J  J A S O N D] - Warning: only works if data starts on a January and stops on a December!
 noEOFs = 3; % Number of EOFs to calculate.
 averageData = true; % Set to true if you wish to calculate the averages for all grid points over time and substract it from the data
 plotEigenvalues = true; % Set to true if you wish to compute and plot the eigenvalues for the EOF components calculated
 numPlotColumns = 2; % Set to the number of columns you wish to get in the resulting .ps file.
 projectionType = 'lambert'; % Select projection to use for plots
 variableName = 'psl'; % Select variable
+flipMaxSouth = true; % If set to true, this script wil automatically flip signs in a way that the maximum is always in the south
+displayMaxMin = true; % If set to true, this script will add max/min markers in the plots.
+climval = 0.05; % Set the max/min Value for colorbar (scalar positive)
 
 %% EOF Calculation and Plotting
 noPlot = 1;
@@ -65,17 +68,47 @@ for i = 1:size(folderContents, 1)
     for j = 1:noEOFs
         % Reshape EOF values
         z = reshape(V(:,j), datasize(1), datasize(2));
-        temp_struct.z = z(lon_idx, :); % Remember that we have resorted longitudes!
+        
+        % Find maximum positions
+        if flipMaxSouth || displayMaxMin
+            [~,idx] = max(V(:,j));
+            [maxPos(1), maxPos(2)] = ind2sub(datasize(1:2), idx);
+            [~,idx] = min(V(:,j));
+            [minPos(1), minPos(2)] = ind2sub(datasize(1:2), idx);
+        end
+        
+        % Resort longitude positions
+        if displayMaxMin
+            maxPos(1) = find(lon_idx == maxPos(1));
+            minPos(1) = find(lon_idx == minPos(1));
+        end
+        
+        % Flip colors so that the maximum is always in the south for better
+        % comparison
+        if flipMaxSouth && maxPos(2) > minPos(2)
+            temp_struct.z = -z(lon_idx, :); % Remember that we have resorted longitudes!
+            temp = maxPos;
+            maxPos = minPos;
+            minPos = temp;
+        else
+            temp_struct.z = +z(lon_idx, :); % Remember that we have resorted longitudes!
+        end
         
         % create plot
         subplot(ceil((noEOFs + plotEigenvalues)/2), 2, j);
-        climval = max([max(V(:,j)), - min(V(:,j))]); % Set colormap to be zero-centered
+        hold on;
+        %climval = max([max(V(:,j)), - min(V(:,j))]); % Set colormap to be zero-centered
+        %climval = 0.1;
         caxis([-climval climval]);
         colormap('jet');
         m_proj(projectionType, 'long', Bounds_lon, 'lat', Bounds_lat);
         m_image(temp_struct.lon, temp_struct.lat, temp_struct.z');
         m_coast('linewidth', 1, 'color', 'black');
         m_grid;
+        if displayMaxMin
+            m_plot(temp_struct.lon(minPos(1)), temp_struct.lat(minPos(2)), '*r');
+            m_plot(temp_struct.lon(maxPos(1)), temp_struct.lat(maxPos(2)), '*b');
+        end
         xlabel(...
             {folderContents(i).name, ...
             strcat('EOF-', num2str(j), '; Eigenvalue: ', num2str(eigenvalues(j))), ...
@@ -84,6 +117,7 @@ for i = 1:size(folderContents, 1)
         colorbar('southoutside'); 
         % You might want to add more things here for plotting
         
+        hold off;
     end
     
     if plotEigenvalues

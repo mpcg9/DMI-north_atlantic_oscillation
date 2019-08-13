@@ -11,7 +11,7 @@ folderContents = dir(strcat(path, '*.nc'));
 use_boundaries = true;
 Bounds_lat = [60 80]; % Boundaries for latitude [in degrees]
 Bounds_lon = [-80 -20]; % Boundaries for longitude [in degrees]
-reduce_height_dimension = 3; % Set to zero if you wish to keep all dimensions in data or if there is only a 2D-grid. If you only wish to keep one height, set this number to the height index you want to read
+reduce_height_dimension = 6; % Set to zero if you wish to keep all dimensions in data or if there is only a 2D-grid. If you only wish to keep one height, set this number to the height index you want to read
 
 %% Ingestion
 
@@ -22,10 +22,11 @@ if use_boundaries
     dataParts{1} = select_subset(dataParts{1}, Bounds_lat(1), Bounds_lat(2), Bounds_lon(1), Bounds_lon(2));
 end
 varn = getVariableName(dataParts{1});
-dataDimensions = size(dataParts{1}.(varn));
 if reduce_height_dimension ~= 0
-    dataParts{1}.(varn) = dataParts{1}.(varn)(:, :, reduce_height_dimension, :);
+    dataParts{1}.(varn)(:, :, :) = dataParts{1}.(varn)(:, :, reduce_height_dimension, :);
 end
+dataDimensions = size(dataParts{1}.(varn));
+disp(strcat({'Read file 1/'}, num2str(size(folderContents, 1))));
 dataLength = 0;
 dataLength = dataLength + dataDimensions(end);
 numDimensions = length(dataDimensions);
@@ -40,6 +41,7 @@ for i = 2:size(folderContents, 1)
         dataParts{i}.(varn) = dataParts{i}.(varn)(:, :, reduce_height_dimension, :);
     end
     dataLength = dataLength + size(dataParts{i}.(varn), numDimensions);
+    disp(strcat('Read file', {' '},num2str(i),'/', num2str(size(folderContents, 1))));
 end
 
 % Preallocation

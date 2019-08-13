@@ -1,6 +1,6 @@
 function [ variableName ] = getVariableName( data )
 data_fields = fieldnames(data);
-for i = 1:length(fieldnames)
+for i = 1:length(data_fields)
     fieldname = data_fields{i};
     if      strcmp(fieldname,'plev') ||...
             strcmp(fieldname,'units') ||...

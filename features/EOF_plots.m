@@ -16,7 +16,7 @@ folderContents = dir(strcat(path, '*.mat'));
 %% Settings
 Bounds_lat = [30, 85]; % Boundaries for latitude [in degrees]
 Bounds_lon = [-80, 10]; % Boundaries for longitude [in degrees]
-Months = [0 0 0 0 0 1  1 1 0 0 0 0]; % Months to be evaluated [J F M A M J  J A S O N D] - Warning: only works if data starts on a January and stops on a December!
+Months = [1 1 0 0 0 0  0 0 0 0 0 1]; % Months to be evaluated [J F M A M J  J A S O N D] - Warning: only works if data starts on a January and stops on a December!
 noEOFs = 3; % Number of EOFs to calculate.
 averageData = true; % Set to true if you wish to calculate the averages for all grid points over time and substract it from the data
 plotEigenvalues = true; % Set to true if you wish to compute and plot the eigenvalues for the EOF components calculated
@@ -32,7 +32,7 @@ for i = 1:size(folderContents, 1)
     
     % Get subset of data
     data = select_subset(data, Bounds_lat(1), Bounds_lat(2), Bounds_lon(1), Bounds_lon(2));
-    data = select_months(data, [1 1 0 0 0 0  0 0 0 0 0 1]); 
+    data = select_months(data, [0 0 0 0 0 1  1 1 0 0 0 0]); 
     
     % Compute and substract averages
     if averageData
@@ -41,7 +41,7 @@ for i = 1:size(folderContents, 1)
     
     % Compute Singular Value Decomposition
     datasize = size(data.(variableName));
-    data.(variableName) = reshape(data.(variableName), datasize(1)*datasize(2), datasize(3:end)); % Create observation matrix by reshaping
+    data.(variableName) = reshape(data.(variableName), datasize(1)*datasize(2), datasize(3)); % Create observation matrix by reshaping
     [~, S, V] = svds(data.(variableName)', noEOFs);
     
     % Change Latitude range to work with m_map
@@ -57,7 +57,7 @@ for i = 1:size(folderContents, 1)
     
     % Compute Eigenvalues
     if plotEigenvalues
-        eigenvalues = diag(S).^2./(size(S,1)-1);
+        eigenvalues = diag(S).^2./(datasize(3)-1);
     end
     clear U S;
     
@@ -78,7 +78,8 @@ for i = 1:size(folderContents, 1)
         m_grid;
         xlabel(...
             {folderContents(i).name, ...
-            strcat('EOF-', num2str(j), '; Eigenvalue: ', num2str(eigenvalues(j))) ...
+            strcat('EOF-', num2str(j), '; Eigenvalue: ', num2str(eigenvalues(j))), ...
+            strcat('Months: ', num2str(Months)) ...
             }, 'Interpreter', 'none');
         colorbar('southoutside'); 
         % You might want to add more things here for plotting

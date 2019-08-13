@@ -17,10 +17,13 @@ folderContents = dir(strcat(path, '*.mat'));
 %% Settings
 Bounds_lat = [20, 85]; % Boundaries for latitude [in degrees]
 Bounds_lon = [-90, 40]; % Boundaries for longitude [in degrees]
-Months = [1 1 0 0 0 0  0 0 0 0 0 1]; % Months to be evaluated [J F M A M J  J A S O N D] - Warning: only works if data starts on a January and stops on a December!
+Months = [0 0 0 0 0 1  1 1 0 0 0 0]; % Months to be evaluated [J F M A M J  J A S O N D] - Warning: only works if data starts on a January and stops on a December!
 noEOFs = 3; % Number of EOFs to calculate.
+cols = 2; % Number of plot columns per page.
 averageData = true; % Set to true if you wish to calculate the averages for all grid points over time and substract it from the data
-plotEigenvalues = true; % Set to true if you wish to compute and plot the eigenvalues for the EOF components calculated
+normalizeByStandardDeviation = true; % Set to true if you additionally wish to normalize the data by its standard deviation
+plotEigenvalues = false; % Set to true if you wish to compute and plot the eigenvalues for the EOF components calculated
+plotTimeseries = true; % If set to true, a second plot with timeseries will appear
 numPlotColumns = 2; % Set to the number of columns you wish to get in the resulting .ps file.
 projectionType = 'lambert'; % Select projection to use for plots
 variableName = 'psl'; % Select variable
@@ -28,10 +31,13 @@ flipMaxSouth = true; % If set to true, this script wil automatically flip signs 
 displayMaxMin = true; % If set to true, this script will add max/min markers in the plots.
 climval = 0.05; % Set the max/min Value for colorbar (scalar positive)
 cm = cbrewer('div', 'RdBu', 31); % Set Colormap
+papersize = [42 60]; % Size of the Paper, in centimeters [21 29.7 for A4]
 
 %% EOF Calculation and Plotting
 noPlot = 1;
 tic;
+
+subplotsizes = [ceil((noEOFs*(1+plotTimeseries) + plotEigenvalues)/cols), cols];
 for i = 1:size(folderContents, 1)
     load(strcat(path,folderContents(i).name));
     
@@ -39,24 +45,30 @@ for i = 1:size(folderContents, 1)
     data = select_subset(data, Bounds_lat(1), Bounds_lat(2), Bounds_lon(1), Bounds_lon(2));
     data = select_months(data, Months); 
     
-    % Compute and substract averages
+    % Normalization if desired
     if averageData
         data.(variableName) = data.(variableName) - mean(data.(variableName), 3);
+    end
+    if normalizeByStandardDeviation
+        data.(variableName) = data.(variableName) ./ std(data.(variableName), 0, 3);
+        variance_sum = size(data.(variableName), 1) * size(data.(variableName), 2);
+    else
+        variance_sum = sum(sum(var(data.(variableName),0,3)));
     end
     
     % Compute Singular Value Decomposition
     datasize = size(data.(variableName));
     data.(variableName) = reshape(data.(variableName), datasize(1)*datasize(2), datasize(3)); % Create observation matrix by reshaping
-    [~, S, V] = svds(data.(variableName)', noEOFs);
+    [U, S, V] = svds(data.(variableName)', noEOFs);
     
     % Change Latitude range to work with m_map
     temp_struct = struct;
     temp_struct.lon = data.lon;
     temp_struct.lat = data.lat;
-%     if plotEigenvalues
-%         unit = data.units;
-%         maxMultiplicator = max(abs(U*S),1)
-%     end
+    if plotTimeseries
+        timeticks = data.time;
+        units = data.units;
+    end
     clear data;
     [temp_struct, lon_idx] = convert_longitudes(temp_struct, min(Bounds_lon));
     
@@ -64,9 +76,18 @@ for i = 1:size(folderContents, 1)
     if plotEigenvalues
         eigenvalues = diag(S).^2./(datasize(3)-1);
     end
+    
+    % Compute Percentage of Variance explained
+    time_series = U*S;
+    variances = var(time_series);
+    variance_percentages = variances ./ variance_sum;
     clear U S;
     
-    figure('Visible','off', 'Name', folderContents(i).name);
+    % create plots
+    fig = figure('Visible','off', 'Name', folderContents(i).name);
+    fig.PaperUnits = 'Centimeters';
+    fig.PaperSize = papersize;
+    noSubplot = 1;
     for j = 1:noEOFs
         % Reshape EOF values
         z = reshape(V(:,j), datasize(1), datasize(2));
@@ -97,7 +118,8 @@ for i = 1:size(folderContents, 1)
         end
         
         % create plot
-        subplot(ceil((noEOFs + plotEigenvalues)/2), 2, j);
+        subplot(subplotsizes(1), subplotsizes(2), noSubplot);
+        noSubplot = noSubplot + 1; 
         hold on;
         %climval = max([max(V(:,j)), - min(V(:,j))]); % Set colormap to be zero-centered
         %climval = 0.1;
@@ -111,19 +133,34 @@ for i = 1:size(folderContents, 1)
             m_plot(temp_struct.lon(minPos(1)), temp_struct.lat(minPos(2)), '*r');
             m_plot(temp_struct.lon(maxPos(1)), temp_struct.lat(maxPos(2)), '*b');
         end
-        xlabel(...
-            {folderContents(i).name, ...
-            strcat('EOF-', num2str(j), '; Eigenvalue: ', num2str(eigenvalues(j))), ...
-            strcat('Months: ', num2str(Months)) ...
-            }, 'Interpreter', 'none');
+        xLabelString1 = folderContents(i).name;
+        xLabelString2 = ['EOF-', num2str(j), '; Months: ', num2str(Months)];
+        xLabelString3 = ['Variance explained: ', num2str(variance_percentages(j)), '%'];
+        if plotEigenvalues
+            xlabel({xLabelString1, xLabelString2, xLabelString3, ['Eigenvalue: ', num2str(eigenvalues(j))]}, 'Interpreter', 'none');
+        else
+            xlabel({xLabelString1, xLabelString2, xLabelString3}, 'Interpreter', 'none');
+        end
         colorbar('southoutside'); 
         % You might want to add more things here for plotting
         
         hold off;
+        
+        if plotTimeseries
+            subplot(subplotsizes(1), subplotsizes(2), noSubplot);
+            noSubplot = noSubplot + 1;
+            hold on;
+            bar(timeticks, time_series(:,j));
+            title(['EOF-' num2str(j)]);
+            xlabel([ 'Time [', units{1} ,']' ]);
+            ylabel([ 'Amount [', units{end}, ']']);
+            hold off;
+        end
     end
     
     if plotEigenvalues
-        subplot(ceil((noEOFs + plotEigenvalues)/2), 2, j+1);
+        subplot(subplotsizes(1), subplotsizes(2), noSubplot);
+        noSubplot = noSubplot + 1;
         semilogy(eigenvalues);
         title('Eigenvalues');
     end

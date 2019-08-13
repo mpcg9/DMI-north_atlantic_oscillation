@@ -5,6 +5,7 @@
 clc, clear, close all;
 addpath(genpath('../functions'));
 addpath(genpath('../toolboxes'));
+addpath('../addons/cbrewer');
 
 % Information: all *.mat-files in the selected folder will have to contain
 % a data variable and will be evaluated as well!
@@ -26,6 +27,7 @@ variableName = 'psl'; % Select variable
 flipMaxSouth = true; % If set to true, this script wil automatically flip signs in a way that the maximum is always in the south
 displayMaxMin = true; % If set to true, this script will add max/min markers in the plots.
 climval = 0.05; % Set the max/min Value for colorbar (scalar positive)
+cm = cbrewer('div', 'RdBu', 31); % Set Colormap
 
 %% EOF Calculation and Plotting
 noPlot = 1;
@@ -100,7 +102,7 @@ for i = 1:size(folderContents, 1)
         %climval = max([max(V(:,j)), - min(V(:,j))]); % Set colormap to be zero-centered
         %climval = 0.1;
         caxis([-climval climval]);
-        colormap('jet');
+        colormap(cm);
         m_proj(projectionType, 'long', Bounds_lon, 'lat', Bounds_lat);
         m_image(temp_struct.lon, temp_struct.lat, temp_struct.z');
         m_coast('linewidth', 1, 'color', 'black');

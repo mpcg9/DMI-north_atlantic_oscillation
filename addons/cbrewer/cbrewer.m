@@ -41,6 +41,8 @@ function [colormap]=cbrewer(ctype, cname, ncol, interp_method)
 % Date: 06.12.2011
 % ------------------------------
 % 18.09.2015  Minor fixes, fixed a bug where the 'spectral' color table did not appear in the preview
+
+
 % load colorbrewer data
 load('colorbrewer.mat')
 % initialise the colormap is there are any problems
@@ -48,6 +50,7 @@ colormap=[];
 if (~exist('interp_method', 'var'))
     interp_method='cubic';
 end
+
 % If no arguments
 if (~exist('ctype', 'var') | ~exist('cname', 'var') | ~exist('ncol', 'var'))
     disp(' ')
@@ -74,9 +77,11 @@ if (~exist('ctype', 'var') | ~exist('cname', 'var') | ~exist('ncol', 'var'))
     %getfield(colorbrewer, 'qual')
     z={'Accent', 'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3'};
     disp(z')
+
     plot_brewer_cmap
     return
 end
+
 % Verify that the input is appropriate
 ctype_names={'div', 'seq', 'qual'};
 if (~ismember(ctype,ctype_names))
@@ -84,12 +89,14 @@ if (~ismember(ctype,ctype_names))
     colormap=[];
     return
 end
+
 if (~isfield(colorbrewer.(ctype),cname))
     disp(['The name of the colortable of type *' ctype '* must be one of the following:'])
     getfield(colorbrewer, ctype)
     colormap=[];
     return
 end
+
 if (ncol>length(colorbrewer.(ctype).(cname)))
 %     disp(' ')
 %     disp('----------------------------------------------------------------------')
@@ -102,6 +109,7 @@ if (ncol>length(colorbrewer.(ctype).(cname)))
     colormap=colormap./255;
     return
 end
+
 if (isempty(colorbrewer.(ctype).(cname){ncol}))
     
     while(isempty(colorbrewer.(ctype).(cname){ncol}))
@@ -114,5 +122,7 @@ if (isempty(colorbrewer.(ctype).(cname){ncol}))
     disp('----------------------------------------------------------------------')
     disp(' ')
 end
+
 colormap=(colorbrewer.(ctype).(cname){ncol})./255;
+
 end

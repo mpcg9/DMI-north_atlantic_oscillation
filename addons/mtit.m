@@ -123,6 +123,7 @@ function	par=mtit(varargin)
 	end
 % ...and axis' order
 		uistack(xh,'bottom');
+        % set(figure_handle,'CurrentAxes',axes_handle)
 		axes(oah);				%#ok
 	if	nargout
 		par.pos=ap;

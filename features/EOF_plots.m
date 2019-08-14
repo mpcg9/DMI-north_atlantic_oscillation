@@ -6,6 +6,7 @@ clc, clear, close all;
 addpath(genpath('../functions'));
 addpath(genpath('../toolboxes'));
 addpath('../addons/cbrewer');
+addpath('../addons');
 
 % Information: all *.mat-files in the selected folder will have to contain
 % a data variable and will be evaluated as well!
@@ -17,11 +18,11 @@ folderContents = dir(strcat(path, '*.mat'));
 %% Settings
 Bounds_lat = [20, 85]; % Boundaries for latitude [in degrees]
 Bounds_lon = [-90, 40]; % Boundaries for longitude [in degrees]
-Months = [0 0 0 0 0 1  1 1 0 0 0 0]; % Months to be evaluated [J F M A M J  J A S O N D] - Warning: only works if data starts on a January and stops on a December!
+Months = [1 1 0 0 0 0  0 0 0 0 0 1]; % Months to be evaluated [J F M A M J  J A S O N D] - Warning: only works if data starts on a January and stops on a December!
 noEOFs = 3; % Number of EOFs to calculate.
 cols = 2; % Number of plot columns per page.
 averageData = true; % Set to true if you wish to calculate the averages for all grid points over time and substract it from the data
-normalizeByStandardDeviation = true; % Set to true if you additionally wish to normalize the data by its standard deviation
+normalizeByStandardDeviation = false; % Set to true if you additionally wish to normalize the data by its standard deviation
 plotEigenvalues = false; % Set to true if you wish to compute and plot the eigenvalues for the EOF components calculated
 plotTimeseries = true; % If set to true, a second plot with timeseries will appear
 numPlotColumns = 2; % Set to the number of columns you wish to get in the resulting .ps file.
@@ -31,14 +32,16 @@ flipMaxSouth = true; % If set to true, this script wil automatically flip signs 
 displayMaxMin = true; % If set to true, this script will add max/min markers in the plots.
 climval = 0.05; % Set the max/min Value for colorbar (scalar positive)
 cm = cbrewer('div', 'RdBu', 31); % Set Colormap
+modifypapersize = false;
 papersize = [42 60]; % Size of the Paper, in centimeters [21 29.7 for A4]
 
-%% EOF Calculation and Plotting
-noPlot = 1;
+%% EOF Calculation
+noPlot = 0;
 tic;
 
-subplotsizes = [ceil((noEOFs*(1+plotTimeseries) + plotEigenvalues)/cols), cols];
+% subplotsizes = [ceil((noEOFs*(1+plotTimeseries) + plotEigenvalues)/cols), cols];
 for i = 1:size(folderContents, 1)
+    close all;
     load(strcat(path,folderContents(i).name));
     
     % Get subset of data
@@ -83,11 +86,13 @@ for i = 1:size(folderContents, 1)
     variance_percentages = variances ./ variance_sum;
     clear U S;
     
-    % create plots
-    fig = figure('Visible','off', 'Name', folderContents(i).name);
-    fig.PaperUnits = 'Centimeters';
-    fig.PaperSize = papersize;
-    noSubplot = 1;
+    %% prepare plotting
+    %     fig = figure('Visible','off', 'Name', folderContents(i).name);
+    %     if modifypapersize
+    %         fig.PaperUnits = 'Centimeters';
+    %         fig.PaperSize = papersize;
+    %     end
+    %     noSubplot = 1;
     for j = 1:noEOFs
         % Reshape EOF values
         z = reshape(V(:,j), datasize(1), datasize(2));
@@ -117,60 +122,98 @@ for i = 1:size(folderContents, 1)
             temp_struct.z = +z(lon_idx, :); % Remember that we have resorted longitudes!
         end
         
-        % create plot
-        subplot(subplotsizes(1), subplotsizes(2), noSubplot);
-        noSubplot = noSubplot + 1; 
-        hold on;
-        %climval = max([max(V(:,j)), - min(V(:,j))]); % Set colormap to be zero-centered
-        %climval = 0.1;
-        caxis([-climval climval]);
-        colormap(cm);
-        m_proj(projectionType, 'long', Bounds_lon, 'lat', Bounds_lat);
-        m_image(temp_struct.lon, temp_struct.lat, temp_struct.z');
-        m_coast('linewidth', 1, 'color', 'black');
-        m_grid;
-        if displayMaxMin
-            m_plot(temp_struct.lon(minPos(1)), temp_struct.lat(minPos(2)), '*r');
-            m_plot(temp_struct.lon(maxPos(1)), temp_struct.lat(maxPos(2)), '*b');
-        end
-        xLabelString1 = folderContents(i).name;
-        xLabelString2 = ['EOF-', num2str(j), '; Months: ', num2str(Months)];
-        xLabelString3 = ['Variance explained: ', num2str(variance_percentages(j)), '%'];
+        %% create map plot
         if plotEigenvalues
-            xlabel({xLabelString1, xLabelString2, xLabelString3, ['Eigenvalue: ', num2str(eigenvalues(j))]}, 'Interpreter', 'none');
+            titlecontent = {[folderContents(i).name], ['EOF-', num2str(j) ,'; Months: ', num2str(Months)], ['Variance: ', num2str(variance_percentages(j)*100, 3), '%; Eigenvalue: ', num2str(eigenvalues(j), 4)]};
         else
-            xlabel({xLabelString1, xLabelString2, xLabelString3}, 'Interpreter', 'none');
+            titlecontent = {[folderContents(i).name], ['EOF-', num2str(j) ,'; Months: ', num2str(Months)], ['Variance: ', num2str(variance_percentages(j)*100, 3), '%']};
         end
-        colorbar('southoutside'); 
-        % You might want to add more things here for plotting
-        
-        hold off;
-        
+        if modifypapersize && displayMaxMin
+            fig = plot_map(temp_struct, projectionType, Bounds_lon, Bounds_lat, 'colorbarlimits', [-climval climval], 'colormap', cm, 'Visible', 'off', 'title', titlecontent, 'markMinPosition', minPos, 'markMaxPosition', maxPos, 'modifyPapersize', papersize);
+        elseif displayMaxMin
+            fig = plot_map(temp_struct, projectionType, Bounds_lon, Bounds_lat, 'colorbarlimits', [-climval climval], 'colormap', cm, 'Visible', 'off', 'title', titlecontent, 'markMinPosition', minPos, 'markMaxPosition', maxPos);
+        elseif modifypapersize
+            fig = plot_map(temp_struct, projectionType, Bounds_lon, Bounds_lat, 'colorbarlimits', [-climval climval], 'colormap', cm, 'Visible', 'off', 'title', titlecontent, 'modifyPapersize', papersize);
+        else
+            fig = plot_map(temp_struct, projectionType, Bounds_lon, Bounds_lat, 'colorbarlimits', [-climval climval], 'colormap', cm, 'Visible', 'off', 'title', titlecontent);
+        end
+        noPlot = noPlot + 1;
+        if noPlot == 1
+            print(strcat(s_path, s_file), '-dpsc', '-fillpage');
+        else
+            print(strcat(s_path, s_file), '-dpsc', '-fillpage', '-append');
+        end
+            
+%         % create plot
+%         subplot(subplotsizes(1), subplotsizes(2), noSubplot);
+%         noSubplot = noSubplot + 1; 
+%         hold on;
+%         %climval = max([max(V(:,j)), - min(V(:,j))]); % Set colormap to be zero-centered
+%         %climval = 0.1;
+%         caxis([-climval climval]);
+%         colormap(cm);
+%         m_proj(projectionType, 'long', Bounds_lon, 'lat', Bounds_lat);
+%         m_image(temp_struct.lon, temp_struct.lat, temp_struct.z');
+%         m_coast('linewidth', 1, 'color', 'black');
+%         m_grid;
+%         if displayMaxMin
+%             m_plot(temp_struct.lon(minPos(1)), temp_struct.lat(minPos(2)), '*r');
+%             m_plot(temp_struct.lon(maxPos(1)), temp_struct.lat(maxPos(2)), '*b');
+%         end
+%         xLabelString3 = ['EOF-', num2str(j), ' Variance: ', num2str(variance_percentages(j)*100, 3), '%'];
+%         if plotEigenvalues
+%             xlabel({xLabelString3, ['Eigenvalue: ', num2str(eigenvalues(j), 4)]}, 'Interpreter', 'none');
+%         else
+%             xlabel({xLabelString3}, 'Interpreter', 'none');
+%         end
+%         colorbar('southoutside'); 
+%         % You might want to add more things here for plotting
+%         
+%         hold off;
+
+        %% create timeseries plot
         if plotTimeseries
-            subplot(subplotsizes(1), subplotsizes(2), noSubplot);
-            noSubplot = noSubplot + 1;
+%             subplot(subplotsizes(1), subplotsizes(2), noSubplot);
+%             noSubplot = noSubplot + 1;
+            fig = figure('Visible','off', 'Name', folderContents(i).name);
+            if modifypapersize
+                fig.PaperUnits = 'Centimeters';
+                fig.PaperSize = papersize;
+            end
+            noPlot = noPlot + 1;
             hold on;
             bar(timeticks, time_series(:,j));
-            title(['EOF-' num2str(j)]);
-            xlabel([ 'Time [', units{1} ,']' ]);
-            ylabel([ 'Amount [', units{end}, ']']);
+            title(['EOF-' num2str(j), '; ', folderContents(i).name], 'Interpreter', 'none');
+            xlabel([ 'Time [d]' ]);
+            ylabel([ 'Amount']);
             hold off;
+            fig.PaperPositionMode = 'manual';
+            orient(fig, 'landscape');
+            print(strcat(s_path, s_file), '-dpsc', '-fillpage', '-append');
         end
     end
     
+    %% create eigenvalue plot
     if plotEigenvalues
-        subplot(subplotsizes(1), subplotsizes(2), noSubplot);
-        noSubplot = noSubplot + 1;
+%         subplot(subplotsizes(1), subplotsizes(2), noSubplot);
+%         noSubplot = noSubplot + 1;
+        fig = figure('Visible','off', 'Name', folderContents(i).name);
+        if modifypapersize
+            fig.PaperUnits = 'Centimeters';
+            fig.PaperSize = papersize;
+        end
+        noPlot = noPlot + 1;
         semilogy(eigenvalues);
         title('Eigenvalues');
+        print(strcat(s_path, s_file), '-dpsc', '-fillpage', '-append');
     end
     
     % save plots to postscript file (can be easily converted to pdf, is the only format with -append option available)
-    if noPlot == 1
-        print(strcat(s_path, s_file), '-dpsc', '-fillpage');
-    else
-        print(strcat(s_path, s_file), '-dpsc', '-fillpage', '-append');
-    end
-    noPlot = noPlot + 1;
+%     if noPlot == 1
+%         print(strcat(s_path, s_file), '-dpsc', '-fillpage');
+%     else
+%         print(strcat(s_path, s_file), '-dpsc', '-fillpage', '-append');
+%     end
+%     noPlot = noPlot + 1;
 end
 toc;

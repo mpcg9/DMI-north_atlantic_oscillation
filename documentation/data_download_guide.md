@@ -10,7 +10,7 @@
         * 'ps' is Surface Air Pressure (in Pa)
         * 'pr' is Precipitation (in kg m-2 s-1)
         * 'ta' is Air Temperature (in K)
-3. Under 'Experiment ID', select the scenario you want to choose. ([More details here](https://www.geosci-model-dev.net/9/1937/2016/gmd-9-1937-2016.pdf))
+3. Under 'Experiment ID', select the scenario(s) that you want to choose. ([More details here](https://www.geosci-model-dev.net/9/1937/2016/gmd-9-1937-2016.pdf))
     * 'ssp[n][xx]' are the [SSP scenarios](https://www.carbonbrief.org/explainer-how-shared-socioeconomic-pathways-explore-future-climate-change)
     * DECK (Diagnostic, Evaluation and Characterization of Klima) scenarios are:
     	* amip: (1979 - 2014) actual data
@@ -25,11 +25,12 @@
     * i1 = initialization 1
     * p1 = physics 1
     * f1 = forcings 1
-		* depending on the selections you made before, there may be no f1 variant.
+		* depending on the selections you've made before, there may be no f1 variant.
 7. Click on 'search'
 8. If you only want to get some test data, you can now click on 'list files' and download one or two if the size is not too large.
    
    If you want to download some more data, create an account and add the files to your data cart. Once vou've got all the data you need in your data cart, go to your data cart, click on 'select all datasets' and then on 'WGET scrips'. It will create a number of links. You will have to download *every* of the scripts that were created (may be more than one!), as different models' data is usually stored on different nodes.
+		* remember to delete your datasets again from your data cart after creating the scripts!
    
 9. After downloading your scripts, execute them by `cd`'ing to the desired folder in your Linux console and then typing `bash <your-script-name.sh>`. The files will be downloaded to the same folder in which you've placed the scripts, so make sure you're on your external hard drive (in case this is where you want to put your files)!
 	* Remember to repeat this step for every script that you've downloaded before
@@ -38,4 +39,4 @@
 	
 ## Some Helpful Links
 * [A Table displaying all data available](https://pcmdi.llnl.gov/CMIP6/ArchiveStatistics/esgf_data_holdings/)
-* [Further Information and Licence for the data](https://pcmdi.llnl.gov/CMIP6/Guide/dataUsers.html)
+* [Further information and licence for the data](https://pcmdi.llnl.gov/CMIP6/Guide/dataUsers.html)

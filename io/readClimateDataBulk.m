@@ -23,7 +23,9 @@ if use_boundaries
 end
 varn = getVariableName(dataParts{1});
 if reduce_height_dimension ~= 0
-    dataParts{1}.(varn)(:, :, :) = dataParts{1}.(varn)(:, :, reduce_height_dimension, :);
+    dataParts{1}.(varn) = dataParts{1}.(varn)(:, :, reduce_height_dimension, :);
+    dataSize = size(dataParts{1}.(varn));
+    dataParts{1}.(varn) = reshape(dataParts{1}.(varn), dataSize(1), dataSize(2), dataSize(4));
 end
 dataDimensions = size(dataParts{1}.(varn));
 disp(strcat({'Read file 1/'}, num2str(size(folderContents, 1))));
@@ -39,6 +41,8 @@ for i = 2:size(folderContents, 1)
     end
     if reduce_height_dimension ~= 0
         dataParts{i}.(varn) = dataParts{i}.(varn)(:, :, reduce_height_dimension, :);
+        dataSize = size(dataParts{i}.(varn));
+        dataParts{i}.(varn) = reshape(dataParts{i}.(varn), dataSize(1), dataSize(2), dataSize(4));
     end
     dataLength = dataLength + size(dataParts{i}.(varn), numDimensions);
     disp(strcat('Read file', {' '},num2str(i),'/', num2str(size(folderContents, 1))));

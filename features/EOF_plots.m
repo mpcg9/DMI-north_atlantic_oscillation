@@ -23,6 +23,7 @@ noEOFs = 3; % Number of EOFs to calculate.
 cols = 2; % Number of plot columns per page.
 averageData = true; % Set to true if you wish to calculate the averages for all grid points over time and substract it from the data
 normalizeByStandardDeviation = false; % Set to true if you additionally wish to normalize the data by its standard deviation
+normalizeByGridSize = false; % Set to true if you wish that every EOF Value is being multiplicated by the number of grid cells
 plotEigenvalues = false; % Set to true if you wish to compute and plot the eigenvalues for the EOF components calculated
 plotTimeseries = true; % If set to true, a second plot with timeseries will appear
 numPlotColumns = 2; % Set to the number of columns you wish to get in the resulting .ps file.
@@ -30,7 +31,7 @@ projectionType = 'lambert'; % Select projection to use for plots
 variableName = 'psl'; % Select variable
 flipMaxSouth = true; % If set to true, this script wil automatically flip signs in a way that the maximum is always in the south
 displayMaxMin = true; % If set to true, this script will add max/min markers in the plots.
-climval = 0.05; % Set the max/min Value for colorbar (scalar positive)
+climval = 500; % Set the max/min Value for colorbar (scalar positive)
 cm = cbrewer('div', 'RdBu', 31); % Set Colormap
 modifypapersize = false;
 papersize = [42 60]; % Size of the Paper, in centimeters [21 29.7 for A4]
@@ -80,6 +81,13 @@ for i = 1:size(folderContents, 1)
         eigenvalues = diag(S).^2./(datasize(3)-1);
     end
     
+    % Normalize by grid size
+    if normalizeByGridSize
+        gridsize = datasize(1)*datasize(2);
+    else
+        gridsize = 1;
+    end 
+    
     % Compute Percentage of Variance explained
     time_series = U*S;
     variances = var(time_series);
@@ -114,12 +122,12 @@ for i = 1:size(folderContents, 1)
         % Flip colors so that the maximum is always in the south for better
         % comparison
         if flipMaxSouth && maxPos(2) > minPos(2)
-            temp_struct.z = -z(lon_idx, :); % Remember that we have resorted longitudes!
+            temp_struct.z = -gridsize*z(lon_idx, :); % Remember that we have resorted longitudes!
             temp = maxPos;
             maxPos = minPos;
             minPos = temp;
         else
-            temp_struct.z = +z(lon_idx, :); % Remember that we have resorted longitudes!
+            temp_struct.z = +gridsize*z(lon_idx, :); % Remember that we have resorted longitudes!
         end
         
         %% create map plot

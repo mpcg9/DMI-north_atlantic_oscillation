@@ -15,25 +15,52 @@ end
 lon_min = mod(lon_min, 360);
 lon_max = mod(lon_max, 360);
 
+% Find out which variables exist
+data_fields = fieldnames(data);
+bnds_lon_exist = false;
+bnds_lat_exist = false;
+for i = 1:length(data_fields)
+    if strcmp(data_fields{i},'lon') ||...
+            strcmp(data_fields{i},'longitude')
+        lonname = data_fields{i};
+    elseif strcmp(data_fields{i},'lat') ||...
+            strcmp(data_fields{i},'latitude')
+        latname = data_fields{i};
+    elseif strcmp(data_fields{i}, 'lon_bnds') ||...
+            strcmp(data_fields{i}, 'lon_bounds')
+        bnds_lon_exist = true;
+        lonbndsname = data_fields{i};
+    elseif strcmp(data_fields{i}, 'lat_bnds') ||...
+            strcmp(data_fields{i}, 'lat_bounds')
+        bnds_lat_exist = true;
+        latbndsname = data_fields{i};
+    end
+end
+
 % Find out the indices of the subset
-if isfield(data, 'lon_bnds') && isfield(data, 'lat_bnds')
+% longitude
+if bnds_lon_exist
     if lon_max > lon_min
-        lon_idx = lon_min < data.lon_bnds(2,:) & lon_max > data.lon_bnds(1,:);
+        lon_idx = lon_min < data.(lonbndsname)(2,:) & lon_max > data.(lonbndsname)(1,:);
     elseif lon_max < lon_min
-        lon_idx = lon_min < data.lon_bnds(2,:) | lon_max > data.lon_bnds(1,:);
+        lon_idx = lon_min < data.(lonbndsname)(2,:) | lon_max > data.(lonbndsname)(1,:);
     else
-        lon_idx = true(size(data.lon));
+        lon_idx = true(size(data.(lonname)));
     end
-    lat_idx = lat_min <= data.lat_bnds(2,:) & lat_max >= data.lat_bnds(1,:);
-else % CNRM data is weird
+else
     if lon_max > lon_min
-        lon_idx = lon_min < data.lon & lon_max > data.lon;
+        lon_idx = lon_min < data.(lonname) & lon_max > data.(lonname);
     elseif lon_max < lon_min
-        lon_idx = lon_min < data.lon | lon_max > data.lon;
+        lon_idx = lon_min < data.(lonname) | lon_max > data.(lonname);
     else
-        lon_idx = true(size(data.lon));
+        lon_idx = true(size(data.(lonname)));
     end
-    lat_idx = lat_min <= data.lat & lat_max >= data.lat;
+end
+% latitude
+if bnds_lat_exist   
+    lat_idx = lat_min <= data.(latbndsname)(2,:) & lat_max >= data.(latbndsname)(1,:);
+else
+    lat_idx = lat_min <= data.(latname) & lat_max >= data.(latname);
 end
 
 % copy data
@@ -42,25 +69,22 @@ l = length(data_fields);
 data_subset = struct;
 for fieldnum = 1:l
     fieldname = data_fields{fieldnum};
-    fieldval = getfield(data, fieldname);
     if      strcmp(fieldname,'time') ||...
             strcmp(fieldname,'time_bnds') ||...
             strcmp(fieldname,'time_bounds') ||...
             strcmp(fieldname,'plev') ||...
             strcmp(fieldname,'units')
-                data_subset = setfield(data_subset, fieldname, fieldval);
-    elseif  strcmp(fieldname,'lat')
-                data_subset = setfield(data_subset, fieldname, fieldval(lat_idx));
-    elseif  strcmp(fieldname,'lat_bnds') ||...
-            strcmp(fieldname,'lat_bounds')
-                data_subset = setfield(data_subset, fieldname, fieldval(:,lat_idx));
-    elseif  strcmp(fieldname,'lon')
-                data_subset = setfield(data_subset, fieldname, fieldval(lon_idx));
-    elseif  strcmp(fieldname,'lon_bnds') ||...
-            strcmp(fieldname,'lon_bounds')
-                data_subset = setfield(data_subset, fieldname, fieldval(:,lon_idx));
+                data_subset.(fieldname) = data.(fieldname);
+    elseif  strcmp(fieldname, latname)
+                data_subset.(fieldname) = data.(fieldname)(lat_idx);
+    elseif  bnds_lat_exist && strcmp(fieldname, latbndsname)
+                data_subset.(fieldname) = data.(fieldname)(:,lat_idx);
+    elseif  strcmp(fieldname, lonname)
+                data_subset.(fieldname) = data.(fieldname)(lon_idx);
+    elseif  bnds_lon_exist && strcmp(fieldname, lonbndsname)
+                data_subset.(fieldname) = data.(fieldname)(:,lon_idx);
     else
-                data_subset = setfield(data_subset, fieldname, fieldval(lon_idx, lat_idx, :, :));
+                data_subset.(fieldname) = data.(fieldname)(lon_idx, lat_idx, :, :);
     end
 end
 end

@@ -21,7 +21,8 @@ if nnz(time_idx' ~= 1:length(data.time)) > 0
                     data_output = setfield(data_output, fieldname, fieldval);
         elseif  strcmp(fieldname, 'time')
                     data_output = setfield(data_output, fieldname, fieldval(time_idx));
-        elseif  strcmp(fieldname, 'time_bnds')
+        elseif  strcmp(fieldname, 'time_bnds') ||...
+                strcmp(fieldname, 'time_bounds')
                     data_output = setfield(data_output, fieldname, fieldval(:,time_idx));
         else
                     if length(size(fieldval)) == 4

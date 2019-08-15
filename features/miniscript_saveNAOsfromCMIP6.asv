@@ -1,0 +1,18 @@
+
+%% settings
+addpath(genpath(cd), genpath(['..' filesep 'data' filesep 'nao']),...
+    genpath(['..' filesep 'functions']));
+
+%% load/save paths
+[file, path] = uigetfile({'*.mat', 'MATLAB binary file (*.mat)'}, 'Please select one file to read. All files will be added automatically');
+folderContents = dir(strcat(path, '*.mat'));
+
+[~, s_path] = uiputfile({'.mat', 'MATLAB binary file (*.mat)'}, 'Save plots as...', strcat(path, 'plots.ps'));
+
+%% load,
+for i = 1:size(folderContents, 1)
+    load(strcat(path,folderContents(i).name));    
+    NAO = compute_NAO(data);
+    save(strcat(s_path, 'NAO', file),'NAO');
+end
+

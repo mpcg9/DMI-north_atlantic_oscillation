@@ -77,11 +77,11 @@ for fieldnum = 1:l
                 data_subset.(fieldname) = data.(fieldname);
     elseif  strcmp(fieldname, latname)
                 data_subset.(fieldname) = data.(fieldname)(lat_idx);
-    elseif  strcmp(fieldname, latbndsname)
+    elseif  bnds_lat_exist && strcmp(fieldname, latbndsname)
                 data_subset.(fieldname) = data.(fieldname)(:,lat_idx);
     elseif  strcmp(fieldname, lonname)
                 data_subset.(fieldname) = data.(fieldname)(lon_idx);
-    elseif  strcmp(fieldname, lonbndsname)
+    elseif  bnds_lon_exist && strcmp(fieldname, lonbndsname)
                 data_subset.(fieldname) = data.(fieldname)(:,lon_idx);
     else
                 data_subset.(fieldname) = data.(fieldname)(lon_idx, lat_idx, :, :);

@@ -104,7 +104,7 @@ mean_pres_nao_pos_1 = mean(pres_nao_pos_1,3);
 mean_pres_nao_pos_2 = mean(pres_nao_pos_2,3);
 
 %% plot preparations
-% convert longitudes from range [0° 360°] to [-180° +180°]
+% convert longitudes from range [0ï¿½ 360ï¿½] to [-180ï¿½ +180ï¿½]
 lon = struct('lon',pres_orig.data.longitude);
 lon = convert_longitudes(lon,-180);
 lon = lon.lon;

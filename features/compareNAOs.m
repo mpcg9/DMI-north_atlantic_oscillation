@@ -21,7 +21,7 @@ extractNegPos = false;
     extractMonths,extractNegPos);
 % ERA5 pressure
 [~,~,nao_5_wint] = prepareNAOs('nao_5.mat',false,[],truncate,...
-    extractMonths,extractNegPos); 
+    extractMonths,extractNegPos);
 
 %% NAO data plots
 % axis definitions

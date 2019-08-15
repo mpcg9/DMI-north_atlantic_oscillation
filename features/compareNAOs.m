@@ -6,81 +6,55 @@ addpath(genpath(cd), genpath(['..' filesep 'data' filesep 'nao']),...
 
 %% NAO data preparation
 % for details of the different nao-files have a look at 'nao_overview.ods'
-[~,~,nao_1_wint] = prepareNAOs('nao_1.data',true,-99.99,2000,[12 1 2],false); % NOAA monthly
-[~,~,nao_2_wint] = prepareNAOs('nao_2.data',true,-99.99,2000,[12 1 2],false); % CRU monthly
-[~,~,nao_3_wint] = prepareNAOs('nao_3.data',true,-99.99,2000,[12 1 2],false); % NOAA daily
-[~,~,nao_5_wint] = prepareNAOs('nao_5.mat',true,-99.99,2000,[12 1 2],false); % ERA5 pressure
+% settings
+reshape = true;
+replace = -99.99;
+truncate = 2000;
+extractMonths = [12 1 2];
+extractNegPos = false;
+
+% NOAA monthly
+[~,~,nao_1_wint] = prepareNAOs('nao_1.data',reshape,replace,truncate,...
+    extractMonths,extractNegPos);
+% CRU monthly
+[~,~,nao_2_wint] = prepareNAOs('nao_2.data',reshape,replace,truncate,...
+    extractMonths,extractNegPos);
+% ERA5 pressure
+[~,~,nao_5_wint] = prepareNAOs('nao_5.mat',false,[],truncate,...
+    extractMonths,extractNegPos); 
 
 %% NAO data plots
-%% axis definitions
-% for comparison of the different data sets
-% axis (months as fractions of a year)
-ax_1 = nao_1(:,1) + nao_1(:,2)./12;
-ax_2 = nao_2(:,1) + nao_2(:,2)./12;
-% axis (days as fractions of a year)
-for k = 1 : length(nao_3)
-    % consecutive number of days within a year
-    nao3_num(k) = date2num(nao_3(k,1),nao_3(k,2),nao_3(k,3));
-end
-ax_3 = nao_3(:,1) + nao3_num'./365;
+% axis definitions
+ax_1 = nao_1_wint.time;
+ax_2 = nao_2_wint.time;
+ax_5 = nao_5_wint.time;
 
 %% unfiltered
-figure; hold on;
-plot(ax_2, nao_2(:,3),'- .','LineWidth',1);
-plot(ax_3, nao_3(:,4),'- .','LineWidth',1);
-plot(ax_1, nao_1(:,3),'- .','LineWidth',1);
-% stem(ax_1, nao_1_re(:,3), '.', 'MarkerSize',0.1);
-% stem(ax_2, nao_2_re(:,3), '.', 'MarkerSize',0.1);
+figure('units','normalized','outerposition',[0 0 1 1]); hold on; grid on;
+plot(ax_2, nao_2_wint.nao,'- .','LineWidth',1);
+plot(ax_1, nao_1_wint.nao,'- .','LineWidth',1);
+plot(ax_5, nao_5_wint.nao,'- .','LineWidth',1);
 hold off;
-title('NAO data comparison');
-legend('data set 1: NOAA monthly', 'data set 2: CRU monthly', 'data set 3: NOAA daily');
+title('NAO data comparison, DJF, unfiltered');
+legend('data set 2: CRU monthly','data set 1: NOAA monthly','data set 5: ERA5 pressure');
 
-%% can't see anything out of these lines. try a filter
+%% fitered
 a = 1;
 % windows size for monthly data
-ws1 = 3; % average of 3 values
-b1 = (1/ws1)*ones(1,ws1);
-% windows size for daily data
-ws2 = ws1*ceil(365/12);
-b2 = (1/ws2)*ones(1,ws2);
+ws = 3; % average of 3 values
+b = (1/ws)*ones(1,ws);
 
-nao_1_filt = filter(b1,a,nao_1(:,3));
-nao_2_filt = filter(b1,a,nao_2(:,3));
-nao_3_filt = filter(b2,a,nao_3(:,4));
+nao_1_filt = filter(b,a,nao_1_wint.nao);
+nao_2_filt = filter(b,a,nao_2_wint.nao);
+nao_5_filt = filter(b,a,nao_5_wint.nao);
 
-figure; grid on; hold on;
+figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
 plot(ax_1,nao_1_filt);
 plot(ax_2,nao_2_filt);
-plot(ax_3,nao_3_filt);
+plot(ax_5,nao_5_filt);
 hold off;
-title(['NAO data comparison full year, filtered, windows size: ' num2str(ws1)]);
-legend('data set 1: NOAA monthly', 'data set 2: CRU monthly', 'data set 3: NOAA daily');
-
-%% try different filter windows
-a = 1;
-ws1 = 1; b1 = (1/ws1)*ones(1,ws1);
-ws2 = 5; b2 = (1/ws2)*ones(1,ws2);
-windowSize3 = 10; b3 = (1/windowSize3)*ones(1,windowSize3);
-
-nao_1_filt1 = filter(b1,a,nao_1(:,3));
-nao_1_filt2 = filter(b2,a,nao_1(:,3));
-nao_1_filt3 = filter(b3,a,nao_1(:,3));
-
-figure; hold on;
-plot(ax_1,nao_1_filt1);
-plot(ax_1,nao_1_filt2);
-plot(ax_1,nao_1_filt3);
-hold off;
-legend('1','2','3');
-
-%% winter plots
-figure; grid on; hold on;
-plot(nao_1_winter.time,nao_1_winter.nao);
-plot(nao_2_winter.time,nao_2_winter.nao);
-plot(nao_3_winter.time,nao_3_winter.nao);
-hold off;
-title('NAO data comparison winter months (DJF)');
-legend('data set 1: NOAA monthly', 'data set 2: CRU monthly', 'data set 3: NOAA daily');
+title(['NAO data comparison, DJF, filtered, windows size: ' num2str(ws)]);
+legend('data set 1: NOAA monthly', 'data set 2: CRU monthly', 'data set 5: ERA5 pressure');
 
 %% break
 % think of putting the following part in another m.file
@@ -185,15 +159,15 @@ for k = 1 : layers
     m_image(lon, pres_orig.data.latitude, pres_orig.data.msl(:,:,k)');
     m_coast('linewidth', 1, 'color', 'black');
     m_grid;
-% % %     drawnow
-% % %     frame = getframe(h);
-% % %     im = frame2im(frame);
-% % %     [imind,cm] = rgb2ind(im,256);
-% % %     if k == 1
-% % %         imwrite(imind,cm,'pressure_orig','gif', 'Loopcount',inf);
-% % %     else
-% % %         imwrite(imind,cm,'pressure_orig','gif','WriteMode','append');
-% % %     end
+    % % %     drawnow
+    % % %     frame = getframe(h);
+    % % %     im = frame2im(frame);
+    % % %     [imind,cm] = rgb2ind(im,256);
+    % % %     if k == 1
+    % % %         imwrite(imind,cm,'pressure_orig','gif', 'Loopcount',inf);
+    % % %     else
+    % % %         imwrite(imind,cm,'pressure_orig','gif','WriteMode','append');
+    % % %     end
 end
 
 

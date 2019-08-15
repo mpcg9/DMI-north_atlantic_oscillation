@@ -30,41 +30,72 @@ if varargin{1} == true
     nao_re = reshapeNAO(nao_orig);
 end
 
-% rep99
+% replace values
 if isempty(varargin{2}) ~= 1
     nao_re.nao(nao_re.nao == varargin{2}) = NaN;
 end
 
 % truncate
 if isempty(varargin{3}) ~= 1
+    if exist('nao_re','var') == 1
+        nao = nao_re;
+    else
+        nao = nao_orig.nao_5;
+    end
     date = datetime(varargin{3},1,1);
-    nao_trnc = struct('time',nao_re.time(nao_re.time >= date,:));
-    nao_trnc = setfield(nao_trnc,'nao',nao_re.nao(nao_re.time >= date,:));
+    nao_trnc = struct('time',nao.time(nao.time >= date,:));
+    nao_trnc = setfield(nao_trnc,'nao',nao.nao(nao.time >= date,:));
 end
+clear nao
 
 % extract months
 if isempty(varargin{4}) ~= 1
     if exist('nao_trnc','var') == 1
         nao = nao_trnc;
-    else
+    elseif exist('nao_re','var') == 1
         nao = nao_re;
+    else
+        nao = nao_orig.nao_5;
     end
     idx = month(nao.time) == varargin{4}(1) | month(nao.time) == varargin{4}(2) | month(nao.time) == varargin{4}(3);
     % + convert timestamps to datetime format
     nao_seas = struct('time', nao.time(idx));
     nao_seas = setfield(nao_seas, 'nao',nao.nao(idx));
 end
+clear nao
 
-% extrPosNegif varargin{5} == true
+% extrPosNeg
+if varargin{5} == true
     if exist('nao_seas','var') == 1
         nao = nao_seas;
     elseif exist('nao_trnc','var') == 1
         nao = nao_trnc;
-    else
+    elseif exist ('nao_re','var') == 1
         nao = nao_re;
+           else
+        nao = nao_orig.nao_5;
     end
     nao_neg = struct('time',nao.time(nao.nao <= 0));
     nao_neg = setfield(nao_neg,'nao',nao.nao(nao.nao <= 0));
     nao_pos = struct('time',nao.time(nao.nao > 0));
     nao_pos = setfield(nao_pos,'nao',nao.nao(nao.nao > 0));
+end
+
+% fake-outputs
+if exist('nao_re','var') == 0
+    nao_re = [];
+end
+if exist('nao_trnc','var') == 0
+    nao_trnc = [];
+end
+if exist('nao_seas','var') == 0
+    nao_seas = [];
+end
+if exist('nao_neg','var') == 0
+    nao_neg = [];
+end
+if exist('nao_pos','var') == 0
+    nao_pos = [];
+end
+
 end

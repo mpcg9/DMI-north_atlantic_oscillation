@@ -112,8 +112,8 @@ title('NAO data comparison winter months (DJF)');
 legend('data set 1: NOAA monthly', 'data set 2: CRU monthly', 'data set 3: NOAA daily');
 
 %% NAO maps
-% ... what?
-% pressure maps at times, when nao is negative/positive
+% pressure maps for negatvie/positive nao
+% ... look strangely similar
 
 %% get pressure data
 pres_orig = load('C:\Users\Lenovo\Desktop\DMI\data\mean sea level pressure data monthly averaged reanalysis 1979-2019 (DJF)\adaptor.mars.internal-1565608912.895368-18802-19-8d36d923-f2b1-484d-85a0-be67f1649d8d.nc.mat');

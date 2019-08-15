@@ -37,5 +37,5 @@
 	* In case that one of the downloads failed or a server becomes unresponsive, you can interrupt the download by pressing `Ctrl`+`C`. If you then start the download again (using `bash <your-script-name.sh>`, as before), your previous download progress will not be lost! You may also use this after the download has finished to check for and resolve any problems that had occurred during the download.
 	
 ## Some Helpful Links
-[A Table displaying all data available](https://pcmdi.llnl.gov/CMIP6/ArchiveStatistics/esgf_data_holdings/)
-[Further Information and Licence for the data](https://pcmdi.llnl.gov/CMIP6/Guide/dataUsers.html)
+* [A Table displaying all data available](https://pcmdi.llnl.gov/CMIP6/ArchiveStatistics/esgf_data_holdings/)
+* [Further Information and Licence for the data](https://pcmdi.llnl.gov/CMIP6/Guide/dataUsers.html)

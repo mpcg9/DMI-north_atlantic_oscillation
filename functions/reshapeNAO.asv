@@ -30,7 +30,6 @@ end
 month = [1:12]'; month = repmat(month,length(year1),1);
 
 % put everything together
-nao_x_fin = struct('time',datetime(year2,month,1,'Format','dd.MM.yyyy'));
-nao_x_fin = setfield(nao_x_fin,'nao',nao_re);
+nao_x_fin = [year2 month nao_re];
 
 end

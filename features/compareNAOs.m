@@ -1,46 +1,18 @@
 
 %% 0. settings
 clearvars; close all; clc;
-f = filesep;
-addpath(genpath(cd), genpath(['..' f 'data' f 'nao']), genpath(['..' f 'scripts']));
+addpath(genpath(cd), genpath(['..' filesep 'data' filesep 'nao']),...
+    genpath(['..' filesep 'functions']));
 
-%% NAO
-%% load files
-% for details of the files have a look at 'nao_overview.ods'
-nao_1 = load('nao_1.data'); % NOAA monthly
-nao_2 = load('nao_2.data'); % CRU monthly
-nao_3 = load('nao_3.data'); % NOAA daily
-
-%% reshape/prepare files
-nao_1 = reshapeNAO(nao_1);
-nao_2 = reshapeNAO(nao_2);
-nao_3(nao_3 == -99.99) = NaN;
-
-%% extract winter months (DJF)
-idx1 = nao_1(:,2) == 12 | nao_1(:,2) == 1 | nao_1(:,2) == 2;
-idx2 = nao_2(:,2) == 12 | nao_2(:,2) == 1 | nao_2(:,2) == 2;
-idx3 = nao_3(:,2) == 12 | nao_3(:,2) == 1 | nao_3(:,2) == 2;
-
-% + convert timestamps to datetime format
-nao_1_winter = struct('time', datetime(nao_1(idx1,1),nao_1(idx1,2),1,'Format','dd.MM.yyyy'));
-nao_2_winter = struct('time', datetime(nao_2(idx2,1),nao_2(idx2,2),1,'Format','dd.MM.yyyy'));
-nao_3_winter = struct('time', datetime(nao_3(idx3,1),nao_3(idx3,2),nao_3(idx3,3),'Format','dd.MM.yyyy'));
-
-nao_1_winter = setfield(nao_1_winter, 'nao',nao_2(idx1,3));
-nao_2_winter = setfield(nao_2_winter, 'nao',nao_2(idx2,3));
-nao_3_winter = setfield(nao_3_winter, 'nao',nao_3(idx3,4));
-
-%% negative/positive naos
-nao_1_neg = nao_1_winter.time(nao_1_winter.nao <= 0);
-nao_1_pos = nao_1_winter.time(nao_1_winter.nao > 0);
-nao_2_neg = nao_2_winter.time(nao_2_winter.nao <= 0);
-nao_2_pos = nao_2_winter.time(nao_2_winter.nao > 0);
-nao_3_neg = nao_3_winter.time(nao_3_winter.nao <= 0);
-nao_3_pos = nao_3_winter.time(nao_3_winter.nao > 0);
+%% NAO data preparation
+% for details of the different nao-files have a look at 'nao_overview.ods'
+[~,~,nao_1_wint] = prepareNAOs('nao_1.data',true,-99.99,2000,[12 1 2],false); % NOAA monthly
+[~,~,nao_2_wint] = prepareNAOs('nao_2.data',true,-99.99,2000,[12 1 2],false); % CRU monthly
+[~,~,nao_3_wint] = prepareNAOs('nao_3.data',true,-99.99,2000,[12 1 2],false); % NOAA daily
+[~,~,nao_5_wint] = prepareNAOs('nao_5.mat',true,-99.99,2000,[12 1 2],false); % ERA5 pressure
 
 %% NAO data plots
-%% unfiltered
-keyboard
+%% axis definitions
 % for comparison of the different data sets
 % axis (months as fractions of a year)
 ax_1 = nao_1(:,1) + nao_1(:,2)./12;
@@ -52,6 +24,7 @@ for k = 1 : length(nao_3)
 end
 ax_3 = nao_3(:,1) + nao3_num'./365;
 
+%% unfiltered
 figure; hold on;
 plot(ax_2, nao_2(:,3),'- .','LineWidth',1);
 plot(ax_3, nao_3(:,4),'- .','LineWidth',1);
@@ -63,14 +36,13 @@ title('NAO data comparison');
 legend('data set 1: NOAA monthly', 'data set 2: CRU monthly', 'data set 3: NOAA daily');
 
 %% can't see anything out of these lines. try a filter
-keyboard
 a = 1;
 % windows size for monthly data
-windowSize1 = 50; % average of 50 values... this is quite coarse
-b1 = (1/windowSize1)*ones(1,windowSize1);
+ws1 = 3; % average of 3 values
+b1 = (1/ws1)*ones(1,ws1);
 % windows size for daily data
-windowSize2 = 50*ceil(365/12); % average of 50 values... this is quite coarse
-b2 = (1/windowSize2)*ones(1,windowSize2);
+ws2 = ws1*ceil(365/12);
+b2 = (1/ws2)*ones(1,ws2);
 
 nao_1_filt = filter(b1,a,nao_1(:,3));
 nao_2_filt = filter(b1,a,nao_2(:,3));
@@ -81,14 +53,13 @@ plot(ax_1,nao_1_filt);
 plot(ax_2,nao_2_filt);
 plot(ax_3,nao_3_filt);
 hold off;
-title('NAO data comparison filtered (very coarse)');
+title(['NAO data comparison full year, filtered, windows size: ' num2str(ws1)]);
 legend('data set 1: NOAA monthly', 'data set 2: CRU monthly', 'data set 3: NOAA daily');
 
 %% try different filter windows
-keyboard
 a = 1;
-windowSize1 = 1; b1 = (1/windowSize1)*ones(1,windowSize1);
-windowSize2 = 5; b2 = (1/windowSize2)*ones(1,windowSize2);
+ws1 = 1; b1 = (1/ws1)*ones(1,ws1);
+ws2 = 5; b2 = (1/ws2)*ones(1,ws2);
 windowSize3 = 10; b3 = (1/windowSize3)*ones(1,windowSize3);
 
 nao_1_filt1 = filter(b1,a,nao_1(:,3));
@@ -110,6 +81,14 @@ plot(nao_3_winter.time,nao_3_winter.nao);
 hold off;
 title('NAO data comparison winter months (DJF)');
 legend('data set 1: NOAA monthly', 'data set 2: CRU monthly', 'data set 3: NOAA daily');
+
+%% break
+% think of putting the following part in another m.file
+% or maybe just throw it away :(
+
+% --------------------------------------------------------------
+% --------------------------------------------------------------
+% --------------------------------------------------------------
 
 %% NAO maps
 % pressure maps for negatvie/positive nao

@@ -1,7 +1,7 @@
 # How to download data from CMIP6
 
 1. Go to [https://esgf-data.dkrz.de/search/cmip6-dkrz/](https://esgf-data.dkrz.de/search/cmip6-dkrz/).
-	* There are other nodes that work the same way and deliver the same results available too.
+	* There are other nodes that work the same way and deliver the same results.
 2. Under 'Variable', select the variable that you want to download
     * See [this Excel table](http://proj.badc.rl.ac.uk/svn/exarch/CMIP6dreq/tags/latest/dreqPy/docs/CMIP6_MIP_tables.xlsx) for details on what those variables mean.
     * Select the corresponding Table under 'Table ID'

@@ -29,7 +29,7 @@
 7. Click on 'search'
 8. If you only want to get some test data, you can now click on 'list files' and download one or two if the size is not too large.
    
-   If you want to download some more data, create an account and add the files to your data cart. Once vou've got all the data you need in your data cart, go to your data cart, click on 'select all datasets' and then on 'WGET scrips'. It will create a number of links. You will have to download *every* of the scripts that were created (may be more than one!), as the different model's data is usually stored on different nodes.
+   If you want to download some more data, create an account and add the files to your data cart. Once vou've got all the data you need in your data cart, go to your data cart, click on 'select all datasets' and then on 'WGET scrips'. It will create a number of links. You will have to download *every* of the scripts that were created (may be more than one!), as different models' data is usually stored on different nodes.
    
 9. After downloading your scripts, execute them by `cd`'ing to the desired folder in your Linux console and then typing `bash <your-script-name.sh>`. The files will be downloaded to the same folder in which you've placed the scripts, so make sure you're on your external hard drive (in case this is where you want to put your files)!
 	* Remember to repeat this step for every script that you've downloaded before

@@ -4,8 +4,9 @@
 % saves the results
 %
 % susann.aschenneller@uni-bonn.de, 08/2019
+
 %% settings
-clearvars; close all; clc;
+clearvars; clc;
 addpath(genpath(cd), genpath(['..' filesep 'data' filesep 'nao']),...
     genpath(['..' filesep 'functions']));
 
@@ -19,8 +20,12 @@ folderContents = dir(strcat(path, '*.mat'));
 for i = 1:size(folderContents, 1)
     load(strcat(path,folderContents(i).name));    
     nao_temp = compute_NAO(data);
-    nao = struct('time',data.time);
+    
+    % recompute from "days since 01.01.1850" into real date
+    refdate = datetime(1850,1,1);
+    time = datetime(refdate + days(data.time),'Format','dd.MM.yyyy');
+    
+    nao = struct('time',time);
     nao = setfield(nao,'nao',nao_temp);
     save(strcat(s_path, 'diffNAO_', folderContents(i).name),'nao');
 end
-

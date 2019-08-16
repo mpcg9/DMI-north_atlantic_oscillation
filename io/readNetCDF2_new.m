@@ -107,11 +107,16 @@ if restrict_lon || restrict_lat
     if restrict_lon
         idx = find(lon_idx == 1);
         interruptions = find(diff(idx) ~= 1);
-        length_first_stride = interruptions(1);
-        stride_in_between_lengths = diff(interruptions);
-        length_last_stride = length(idx) - length_first_stride + sum(stride_in_between_lengths);
-        start_lon = [idx(1) idx(interruptions+1)];
-        stride_lon= [length_first_stride, stride_in_between_lengths, length_last_stride];
+        if length(interruptions >= 1)
+            length_first_stride = interruptions(1);
+            stride_in_between_lengths = diff(interruptions);
+            length_last_stride = length(idx) - length_first_stride + sum(stride_in_between_lengths);
+            start_lon = [idx(1) idx(interruptions+1)];
+            stride_lon= [length_first_stride, stride_in_between_lengths, length_last_stride];
+        else
+            start_lon = idx(1);
+            stride_lon= length(idx);
+        end
     end
     if restrict_lat
         idx = find(lat_idx == 1);

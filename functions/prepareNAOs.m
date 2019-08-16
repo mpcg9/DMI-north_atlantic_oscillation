@@ -40,7 +40,10 @@ if isempty(varargin{3}) ~= 1
     if exist('nao_re','var') == 1
         nao = nao_re;
     else
-        nao = nao_orig.nao_5;
+        %         data_fields = fieldnames(nao_orig);
+        %         fieldname = data_fields(1);
+        %         nao = nao_orig.fieldname;
+        nao = nao_orig.nao;
     end
     date = datetime(varargin{3},1,1);
     nao_trnc = struct('time',nao.time(nao.time >= date,:));
@@ -55,7 +58,7 @@ if isempty(varargin{4}) ~= 1
     elseif exist('nao_re','var') == 1
         nao = nao_re;
     else
-        nao = nao_orig.nao_5;
+        nao = nao_orig.nao;
     end
     idx = month(nao.time) == varargin{4}(1) | month(nao.time) == varargin{4}(2) | month(nao.time) == varargin{4}(3);
     % + convert timestamps to datetime format
@@ -73,7 +76,7 @@ if varargin{5} == true
     elseif exist ('nao_re','var') == 1
         nao = nao_re;
            else
-        nao = nao_orig.nao_5;
+        nao = nao_orig.nao;
     end
     nao_neg = struct('time',nao.time(nao.nao <= 0));
     nao_neg = setfield(nao_neg,'nao',nao.nao(nao.nao <= 0));

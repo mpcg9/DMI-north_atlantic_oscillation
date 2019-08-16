@@ -5,10 +5,6 @@ f = filesep;
 addpath(genpath(cd), genpath(['..' f 'functions']), genpath(['..' f 'data' f 'nao']));
 
 %% NAO data preparation
-% general settings
-truncate = 1979;
-extractMonths = [12 1 2];
-extractNegPos = false;
 
 %% already calculated naos downloaded from NOAA/CRU
 % for details of the different files have a look at 'nao_overview.ods'
@@ -16,35 +12,44 @@ extractNegPos = false;
 folderName = 'NOAA_CRU_already calculated';
 reshape_1 = true;
 replace_1 = -99.99;
+truncate_1 = 2000;
+extractMonths_1 = [12 1 2];
+extractNegPos_1 = false;
 
 % NOAA monthly
 [~,~,nao_1_wint] = prepareNAOs([folderName f 'nao_1.data'],...
-    reshape_1,replace_1,truncate, extractMonths,extractNegPos);
+    reshape_1,replace_1,truncate_1, extractMonths_1,extractNegPos_1);
 % CRU monthly
 [~,~,nao_2_wint] = prepareNAOs([folderName f 'nao_2.data'],...
-    reshape_1,replace_1,truncate, extractMonths,extractNegPos);
+    reshape_1,replace_1,truncate_1, extractMonths_1,extractNegPos_1);
 
 %% computed as pressure differences with data from ERA5
 % settings
 folderName = 'ERA5';
 reshape_2 = false;
 replace_2 = [];
+truncate_2 = 2000;
+extractMonths_2 = [12 1 2];
+extractNegPos_2 = false;
 
 [~,~,nao_ERA5_wint] = prepareNAOs([folderName f 'diffNAO_ERA5.mat'],...
-    reshape_2,replace_2,truncate, extractMonths,extractNegPos);
+    reshape_2,replace_2,truncate_2, extractMonths_2,extractNegPos_2);
 
 %% computed as pressure differences with data from CMIP6 - historical
 % settings
 folderName = 'CMIP6_psl historical';
 reshape_3 = false;
 replace_3 = [];
+truncate_3 = 2000;
+extractMonths_3 = [12 1 2];
+extractNegPos_3 = false;
 
 path = 'C:\Users\Lenovo\Documents\Master\DMI-north_atlantic_oscillation\data\nao\CMIP6_psl historical\';
 folderContents = dir(strcat(path, '*.mat'));
 
 for i = 1 : size(folderContents, 1)
     [~,~,nao_CMIP6_historical{i}] = prepareNAOs(strcat(path,folderContents(i).name),...
-        reshape_3,replace_3,truncate, extractMonths,extractNegPos);
+        reshape_3,replace_3,truncate_3, extractMonths_3,extractNegPos_3);
     nao_CMIP6_historical{i}.name = strrep(folderContents(i).name,'_',' ');
 end
 
@@ -68,48 +73,42 @@ b = (1/ws)*ones(1,ws);
 nao_1_filt = filter(b,a,nao_1_wint.nao);
 nao_2_filt = filter(b,a,nao_2_wint.nao);
 nao_era5_filt = filter(b,a,nao_ERA5_wint.nao);
-for k = 1 : length(nao_CMIP6_historical)
-    nao_CMIP6_hist_filt{k} = filter(b,a, nao_CMIP6_historical{k}.nao);
-end
+nao_CMIP6_hist_1_filt = filter(b,a, nao_CMIP6_historical{1,1}.nao);
 
-% plots
-lw = 2; % LineWidth
-% --- part 1 ---
 figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
-plot(ax_1,nao_1_filt,'LineWidth',lw);
-plot(ax_2,nao_2_filt,'LineWidth',lw);
-plot(ax_era5,nao_era5_filt,'LineWidth',lw);
+plot(ax_1,nao_1_filt);
+plot(ax_2,nao_2_filt);
+plot(ax_era5,nao_era5_filt);
+
+plot(ax_CMIP6_hist_1,nao_CMIP6_hist_1_filt);
+hold off;
+title(['NAO data comparison, DJF, filtered, windows size: ' num2str(ws)]);
+legend('NOAA monthly', 'CRU monthly', 'from ERA5 pressure differences',...
+    ['from ' nao_CMIP6_historical{1,1}.name ' pressure differences'] );
+
+%% unfiltered
+figure('units','normalized','outerposition',[0 0 1 1]); hold on; grid on;
+plot(ax_2, nao_2_wint.nao,'- .','LineWidth',1);
+plot(ax_1, nao_1_wint.nao,'- .','LineWidth',1);
+plot(ax_era5, nao_ERA5_wint.nao,'- .','LineWidth',1);
 
 for k = 1 : 5
-    plot(ax_CMIP6_hist{k},nao_CMIP6_hist_filt{k},'-.','LineWidth',1.2);
+    plot(ax_CMIP6_hist{k}, nao_CMIP6_historical{k}.nao);
 end
-
 hold off;
-title(['NAO data comparison, DJF, filtered, windows size: ' num2str(ws)]);
-legend('NOAA monthly', 'CRU monthly', 'from ERA5 pressure differences',...
-    ['from ' nao_CMIP6_historical{1}.name ' pressure differences'],...
-    ['from ' nao_CMIP6_historical{2}.name ' pressure differences'],...
-    ['from ' nao_CMIP6_historical{3}.name ' pressure differences'],...
-    ['from ' nao_CMIP6_historical{4}.name ' pressure differences'],...
-    ['from ' nao_CMIP6_historical{5}.name ' pressure differences']);
+title('NAO data comparison, DJF, unfiltered');
+legend('data set 2: CRU monthly','data set 1: NOAA monthly','data set 5: ERA5 pressure');
 
-% --- part 2 ---
-
-figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
-plot(ax_1,nao_1_filt,'LineWidth',lw);
-plot(ax_2,nao_2_filt,'LineWidth',lw);
-plot(ax_era5,nao_era5_filt,'LineWidth',lw);
+figure('units','normalized','outerposition',[0 0 1 1]); hold on; grid on;
+plot(ax_2, nao_2_wint.nao,'- .','LineWidth',1);
+plot(ax_1, nao_1_wint.nao,'- .','LineWidth',1);
+plot(ax_era5, nao_ERA5_wint.nao,'- .','LineWidth',1);
 
 for k = 6 : length(nao_CMIP6_historical)
-    plot(ax_CMIP6_hist{k},nao_CMIP6_hist_filt{k},'-.','LineWidth',1.2);
+    plot(ax_CMIP6_hist{k}, nao_CMIP6_historical{k}.nao);
 end
 
 hold off;
-title(['NAO data comparison, DJF, filtered, windows size: ' num2str(ws)]);
-legend('NOAA monthly', 'CRU monthly', 'from ERA5 pressure differences',...
-    ['from ' nao_CMIP6_historical{6}.name ' pressure differences'],...
-    ['from ' nao_CMIP6_historical{7}.name ' pressure differences'],...
-    ['from ' nao_CMIP6_historical{8}.name ' pressure differences'],...
-    ['from ' nao_CMIP6_historical{9}.name ' pressure differences'],...
-    ['from ' nao_CMIP6_historical{10}.name ' pressure differences']);
+title('NAO data comparison, DJF, unfiltered');
+legend('data set 2: CRU monthly','data set 1: NOAA monthly','data set 5: ERA5 pressure');
 

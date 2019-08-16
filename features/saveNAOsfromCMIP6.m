@@ -23,7 +23,7 @@ for i = 1:size(folderContents, 1)
     
     % recompute from "days since xx.xx.xxxx" into real date
     % *** INPUT: reference date ***
-    refdate = datetime(2015,1,1);
+    refdate = datetime(0000,1,1);
     time = datetime(refdate + days(data.time),'Format','dd.MM.yyyy');
     
     nao = struct('time',time);

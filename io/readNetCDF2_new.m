@@ -2,6 +2,11 @@ function [ data ] = readNetCDF2_new( filename, varargin )
 % Reads netCDF Version 3 and 4 files in Matlab
 %
 % INPUT: filename ... filename including path
+%        varargin ... use 'Longitudes', [Lonmin, Lonmax] to specify a longitude window
+%                     use 'Latitudes', [Latmin, Latmax] to specify a latitude window
+%                     use 'Plev', [Plev] to select a certain height
+%                     These restrictions save memory and may freely be
+%                     combinated.
 %
 % OUTPUT: data ... struct with netCDF data
 %
@@ -10,7 +15,7 @@ function [ data ] = readNetCDF2_new( filename, varargin )
 % which is included inside the data struct.
 %
 % original: Uebbing 06/2016
-% this version: Sauerland 08/2019
+% this version: Florian Sauerland 08/2019
 
 ncid = netcdf.open(filename, 'NC_NOWRITE'); % oeffnen der Datei
 

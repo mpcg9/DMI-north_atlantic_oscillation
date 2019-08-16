@@ -11,7 +11,7 @@ folderContents = dir(strcat(path, '*.nc'));
 use_boundaries = true;
 Bounds_lat = [60 80]; % Boundaries for latitude [in degrees]
 Bounds_lon = [-80 -20]; % Boundaries for longitude [in degrees]
-reduce_height_dimension = 0; % Set to zero if you wish to keep all dimensions in data or if there is only a 2D-grid. If you only wish to keep one height, set this number to the height index you want to read
+reduce_height_dimension = 6; % Set to zero if you wish to keep all dimensions in data or if there is only a 2D-grid. If you only wish to keep one height, set this number to the height index you want to read
 
 %% Ingestion
 

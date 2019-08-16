@@ -21,8 +21,9 @@ for i = 1:size(folderContents, 1)
     load(strcat(path,folderContents(i).name));    
     nao_temp = compute_NAO(data);
     
-    % recompute from "days since 01.01.1850" into real date
-    refdate = datetime(1850,1,1);
+    % recompute from "days since xx.xx.xxxx" into real date
+    % *** INPUT: reference date ***
+    refdate = datetime(2015,1,1);
     time = datetime(refdate + days(data.time),'Format','dd.MM.yyyy');
     
     nao = struct('time',time);

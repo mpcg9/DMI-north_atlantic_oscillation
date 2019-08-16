@@ -9,24 +9,22 @@ folderContents = dir(strcat(path, '*.nc'));
 
 %% Settings
 use_boundaries = true;
-Bounds_lat = [-10 90]; % Boundaries for latitude [in degrees]
-Bounds_lon = [-120 60]; % Boundaries for longitude [in degrees]
-reduce_height_dimension = 0; % Set to zero if you wish to keep all dimensions in data or if there is only a 2D-grid. If you only wish to keep one height, set this number to the height index you want to read
+Bounds_lat = [60 80]; % Boundaries for latitude [in degrees]
+Bounds_lon = [-80 -20]; % Boundaries for longitude [in degrees]
+reduce_height_dimension = 6; % Set to zero if you wish to keep all dimensions in data or if there is only a 2D-grid. If you only wish to keep one height, set this number to the height index you want to read
 
 %% Ingestion
 
+% reset to defaults if no boundaries wanted.
+if ~use_boundaries
+    Bounds_lat = false;
+    Bounds_lon = false;
+end
+
 % Find out dimensions and variable
 dataParts = cell(size(folderContents, 1), 1);
-dataParts{1} = readNetCDF2(strcat(path,folderContents(1).name));
-if use_boundaries
-    dataParts{1} = select_subset(dataParts{1}, Bounds_lat(1), Bounds_lat(2), Bounds_lon(1), Bounds_lon(2));
-end
+dataParts{1} = readNetCDF2_new(strcat(path,folderContents(1).name), 'Latitudes', Bounds_lat, 'Longitudes', Bounds_lon, 'Plev', reduce_height_dimension);
 varn = getVariableName(dataParts{1});
-if reduce_height_dimension ~= 0
-    dataParts{1}.(varn) = dataParts{1}.(varn)(:, :, reduce_height_dimension, :);
-    dataSize = size(dataParts{1}.(varn));
-    dataParts{1}.(varn) = reshape(dataParts{1}.(varn), dataSize(1), dataSize(2), dataSize(4));
-end
 dataDimensions = size(dataParts{1}.(varn));
 disp(strcat({'Read file 1/'}, num2str(size(folderContents, 1))));
 dataLength = 0;
@@ -35,15 +33,7 @@ numDimensions = length(dataDimensions);
 dataDimensions = dataDimensions(1:end-1);
 
 for i = 2:size(folderContents, 1)
-    dataParts{i} = readNetCDF2(strcat(path,folderContents(i).name));
-    if use_boundaries
-        dataParts{i} = select_subset(dataParts{i}, Bounds_lat(1), Bounds_lat(2), Bounds_lon(1), Bounds_lon(2));
-    end
-    if reduce_height_dimension ~= 0
-        dataParts{i}.(varn) = dataParts{i}.(varn)(:, :, reduce_height_dimension, :);
-        dataSize = size(dataParts{i}.(varn));
-        dataParts{i}.(varn) = reshape(dataParts{i}.(varn), dataSize(1), dataSize(2), dataSize(4));
-    end
+    dataParts{i} = readNetCDF2_new(strcat(path,folderContents(i).name), 'Latitudes', Bounds_lat, 'Longitudes', Bounds_lon, 'Plev', reduce_height_dimension);
     dataLength = dataLength + size(dataParts{i}.(varn), numDimensions);
     disp(strcat('Read file', {' '},num2str(i),'/', num2str(size(folderContents, 1))));
 end

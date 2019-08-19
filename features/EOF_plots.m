@@ -18,12 +18,12 @@ folderContents = dir(strcat(path, '*.mat'));
 %% Settings
 Bounds_lat = [20, 85]; % Boundaries for latitude [in degrees]
 Bounds_lon = [-90, 40]; % Boundaries for longitude [in degrees]
-Months = [1 1 0 0 0 0  0 0 0 0 0 1]; % Months to be evaluated [J F M A M J  J A S O N D] - Warning: only works if data starts on a January and stops on a December!
+Months = [0 0 0 0 0 1  1 1 0 0 0 0]; % Months to be evaluated [J F M A M J  J A S O N D] - Warning: only works if data starts on a January and stops on a December!
 noEOFs = 3; % Number of EOFs to calculate.
 cols = 2; % Number of plot columns per page.
 averageData = true; % Set to true if you wish to calculate the averages for all grid points over time and substract it from the data
 normalizeByStandardDeviation = false; % Set to true if you additionally wish to normalize the data by its standard deviation
-normalizeByGridSize = false; % Set to true if you wish that every EOF Value is being multiplicated by the number of grid cells
+normalizeByGridSize = true; % Set to true if you wish that every EOF Value is being multiplicated by the square root of the number of grid cells. This normalizes the mean Variance of all EOFs to 1.
 plotEigenvalues = false; % Set to true if you wish to compute and plot the eigenvalues for the EOF components calculated
 plotTimeseries = true; % If set to true, a second plot with timeseries will appear
 numPlotColumns = 2; % Set to the number of columns you wish to get in the resulting .ps file.
@@ -31,7 +31,7 @@ projectionType = 'lambert'; % Select projection to use for plots
 variableName = 'psl'; % Select variable
 flipMaxSouth = true; % If set to true, this script wil automatically flip signs in a way that the maximum is always in the south
 displayMaxMin = true; % If set to true, this script will add max/min markers in the plots.
-climval = 0.05; % Set the max/min Value for colorbar (scalar positive)
+climval = 3.5; % Set the max/min Value for colorbar (scalar positive)
 cm = cbrewer('div', 'RdBu', 31); % Set Colormap
 modifypapersize = false;
 papersize = [42 60]; % Size of the Paper, in centimeters [21 29.7 for A4]
@@ -83,7 +83,7 @@ for i = 1:size(folderContents, 1)
     
     % Normalize by grid size
     if normalizeByGridSize
-        gridsize = datasize(1)*datasize(2);
+        gridsize = sqrt(datasize(1)*datasize(2));
     else
         gridsize = 1;
     end 

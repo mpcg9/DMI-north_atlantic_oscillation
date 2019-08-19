@@ -2,11 +2,18 @@ function [ data ] = readNetCDF2_new( filename, varargin )
 % Reads netCDF Version 3 and 4 files in Matlab
 %
 % INPUT: filename ... filename including path
+<<<<<<< HEAD
 %        varargin ... use 'Longitudes', [Lonmin, Lonmax] to specify a longitude window
 %                     use 'Latitudes', [Latmin, Latmax] to specify a latitude window
 %                     use 'Plev', [Plev] to select a certain height
 %                     These restrictions save memory and may freely be
 %                     combinated.
+=======
+%   possible Input: 'Latitudes', [min max]
+%                   'Longitudes', [min max]
+%                   'Plev', [pressure level]
+%   e.g. readNetCDF2_new( filename,'Latitudes', [min max],'Longitudes', [min max],'Plev', [pressure level] )
+>>>>>>> susann
 %
 % OUTPUT: data ... struct with netCDF data
 %

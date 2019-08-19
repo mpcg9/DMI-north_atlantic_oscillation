@@ -2,6 +2,10 @@ function [ data ] = readNetCDF2_new( filename, varargin )
 % Reads netCDF Version 3 and 4 files in Matlab
 %
 % INPUT: filename ... filename including path
+%   possible Input: 'Latitudes', [min max]
+%                   'Longitudes', [min max]
+%                   'Plev', [pressure level]
+%   e.g. readNetCDF2_new( filename,'Latitudes', [min max],'Longitudes', [min max],'Plev', [pressure level] )
 %
 % OUTPUT: data ... struct with netCDF data
 %

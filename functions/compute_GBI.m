@@ -2,7 +2,7 @@ function [ GBI ] = compute_GBI( data )
 
 varn = getVariableName(data);
 data = select_subset(data, 60, 80, -80, -20);
-if varn ~= 'zg'
+if ~strcmp(varn, 'zg')
     warning('Make sure to use variable zg for GBI calculation');
 end
 

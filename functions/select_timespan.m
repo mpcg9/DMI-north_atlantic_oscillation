@@ -13,6 +13,10 @@ for i = 1:length(data_fields)
     end
 end
 
+if isdatetime(day_start)
+    data = convert_times(data);
+end
+
 % Select subset of time
 if bnds_time_exist
     time_idx = data.(timebndsname)(2,:) > day_start & data.(timebndsname)(1,:) < day_end;

@@ -7,7 +7,6 @@ function [ data ] = readNetCDF2_new( filename, varargin )
 %                     use 'Plev', [Plev] to select a certain height
 %                     These restrictions save memory and may freely be
 %                     combinated.
-%
 % OUTPUT: data ... struct with netCDF data
 %
 % Note: All scale factors, add_offsets etc. will be applied so the

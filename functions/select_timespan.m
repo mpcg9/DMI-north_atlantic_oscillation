@@ -1,4 +1,8 @@
-function [ data_subset ] = select_timespan( data, day_start, day_end )
+function [ data_subset ] = select_timespan( data, day_start, day_end, force_no_boundary_usage )
+
+if nargin == 3
+    force_no_boundary_usage = false;
+end
 
 % Find out which variables exist
 data_fields = fieldnames(data);
@@ -18,7 +22,7 @@ if isdatetime(day_start)
 end
 
 % Select subset of time
-if bnds_time_exist
+if bnds_time_exist && ~force_no_boundary_usage
     time_idx = data.(timebndsname)(2,:) > day_start & data.(timebndsname)(1,:) < day_end;
 else
     time_idx = data.(timename) >= day_start & data.(timename) <= day_end;

@@ -1,3 +1,8 @@
+%% compareNAOs
+% comparison of NAOs from NOAA/CRU, ERA5, CMIP6 historical simulations and
+% CMIP6 future projections (scenarios 245 and 585)
+%
+% susann.aschenneller@uni-bonn.de, 08/2019
 
 %% settings
 clearvars; close all; clc;

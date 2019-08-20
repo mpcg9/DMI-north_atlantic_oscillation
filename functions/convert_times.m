@@ -1,4 +1,8 @@
-function [ data ] = convert_times( data )
+function [ data ] = convert_times( data, checkIrregularities )
+
+if nargin == 1
+    checkIrregularities = true;
+end
 
 data_fields = fieldnames(data);
 time_bnds_exist = 0;
@@ -32,25 +36,47 @@ unit = timeunit{1};
 if length(timeunit) == 4
     datestrings = cellfun(@str2double, split(timeunit{3}, '-'));
     timestrings = cellfun(@str2double, split(timeunit{4}, ':'));
-    starttime = datetime(datestrings(1), datestrings(2), datestrings(3), timestrings(1), timestrings(2), timestrings(3));
+    if length(timestrings) == 3
+        starttime = datetime(datestrings(1), datestrings(2), datestrings(3), timestrings(1), timestrings(2), timestrings(3));
+    else
+        starttime = datetime(datestrings(1), datestrings(2), datestrings(3), timestrings(1), timestrings(2), 0);
+    end
 else
     datestrings = cellfun(@str2double, split(timeunit(3), '-'));
     starttime = datetime(datestrings(1), datestrings(2), datestrings(3));
 end
 
+% detect monthly data with irregularities
+uses30daymonths = false;
+usesnoleapyears = false;
+if ~isdatetime(data.(timename)) && checkIrregularities && strcmpi(unit, 'days')
+    if all(diff(data.(timename)) == 30) % detect 30-day months / 360-day years
+        uses30daymonths = true;
+    elseif length(data.(timename)) > 96 && all(diff(data.(timename)(1:12:end)) == 365) % detect omitted leap years
+        usesnoleapyears = true;
+    end
+end
+
 % convert times to datetimes (if not yet done)
 if ~isdatetime(data.(timename))
-    if strcmpi(unit, 'days')
+    if uses30daymonths
+        data.(timename) = starttime + calmonths(floor(data.(timename)(1) / 30)) + days(rem(data.(timename)(1), 30)) + calmonths(0:1:(length(data.(timename))-1));
+    elseif usesnoleapyears
+        data.(timename) = starttime + years(floor(data.(timename)(1) / 365)) + days(rem(data.(timename)(1), 365)) + calmonths(0:1:(length(data.(timename))-1));
+    elseif strcmpi(unit, 'days')
         data.(timename) = starttime + days(data.(timename));
     elseif strcmpi(unit, 'hours')
         data.(timename) = starttime + hours(data.(timename));
     end
 end
 if time_bnds_exist && ~isdatetime(data.(timebndsname))
-    if strcmpi(unit, 'days')
+    if uses30daymonths
+        data.(timebndsname) = starttime + calmonths(floor(data.(timebndsname)(1,1) / 30)) + days(rem(data.(timebndsname)(1,1), 30)) + [calmonths(0:1:(length(data.(timename))-1)); calmonths(1:1:length(data.(timename)))];
+    elseif usesnoleapyears
+        data.(timebndsname) = starttime + years(floor(data.(timebndsname)(1,1) / 365)) + days(rem(data.(timebndsname)(1,1), 365)) + [calmonths(0:1:(length(data.(timename))-1)); calmonths(1:1:length(data.(timename)))];
+    elseif strcmpi(unit, 'days')
         data.(timebndsname) = starttime + days(data.(timebndsname));
     elseif strcmpi(unit, 'hours')
         data.(timebndsname) = starttime + hours(data.(timebndsname));
     end
 end
-

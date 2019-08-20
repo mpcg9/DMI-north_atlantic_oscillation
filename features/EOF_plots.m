@@ -18,9 +18,11 @@ folderContents = dir(strcat(path, '*.mat'));
 %% Settings
 Bounds_lat = [20, 85]; % Boundaries for latitude [in degrees]
 Bounds_lon = [-90, 40]; % Boundaries for longitude [in degrees]
-Months = [0 0 0 0 0 1  1 1 0 0 0 0]; % Months to be evaluated [J F M A M J  J A S O N D] - Warning: only works if data starts on a January and stops on a December!
+use_time_bounds = true;
+Bounds_time = datetime({'2080-1-1', '2099-12-31'}, 'InputFormat', 'uuuu-M-d'); % Boundaries for time
+Months = [1 1 0 0 0 0  0 0 0 0 0 1]; % Months to be evaluated [J F M A M J  J A S O N D] - Warning: only works if data starts on a January and stops on a December! Will also be applied if use_time_bounds is false.
 noEOFs = 3; % Number of EOFs to calculate.
-cols = 2; % Number of plot columns per page.
+% cols = 2; % Number of plot columns per page.
 averageData = true; % Set to true if you wish to calculate the averages for all grid points over time and substract it from the data
 normalizeByStandardDeviation = false; % Set to true if you additionally wish to normalize the data by its standard deviation
 normalizeByGridSize = true; % Set to true if you wish that every EOF Value is being multiplicated by the square root of the number of grid cells. This normalizes the mean Variance of all EOFs to 1.
@@ -47,6 +49,9 @@ for i = 1:size(folderContents, 1)
     
     % Get subset of data
     data = select_subset(data, Bounds_lat(1), Bounds_lat(2), Bounds_lon(1), Bounds_lon(2));
+    if use_time_bounds
+        data = select_timespan(data, Bounds_time(1), Bounds_time(2), true);
+    end
     data = select_months(data, Months); 
     
     % Normalization if desired
@@ -190,7 +195,7 @@ for i = 1:size(folderContents, 1)
             end
             noPlot = noPlot + 1;
             hold on;
-            bar(timeticks, time_series(:,j));
+            bar(timeticks, time_series(:,j)./gridsize);
             title(['EOF-' num2str(j), '; ', folderContents(i).name], 'Interpreter', 'none');
             xlabel([ 'Time [d]' ]);
             ylabel([ 'Amount']);

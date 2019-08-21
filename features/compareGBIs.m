@@ -43,31 +43,39 @@ x_min = datetime(1979,1,1); x_max = datetime(2019,7,1);
 y_min = 4600; y_max = 6600;
 
 % LineWidth
-lw1 = 1; lw2 = 1.2;
+lw1 = 1; lw2 = 0.7;
 
 % Part 1
 figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
-plot(gbi_NOAA.time,gbi_NOAA_filt,'k','DisplayName','NOAA (daily) download','LineWidth',lw1);
+plot(gbi_NOAA.time,gbi_NOAA_filt,'k','DisplayName',...
+    ['NOAA (daily) download, filtered with windows size ' num2str(ws)],'LineWidth',lw1);
 plot(gbi_ERA5.time,gbi_ERA5.GBI,'DisplayName','ERA5 (monthly)','LineWidth',lw1);
 for k = 1 : 5
-    plot(gbi_CMIP6_hist{k}.time,gbi_CMIP6_hist{k}.GBI,'LineWidth',lw2,'DisplayName',['CMIP6 historical ' gbi_CMIP6_hist{k}.name]); % with legend
+    plot(gbi_CMIP6_hist{k}.time,gbi_CMIP6_hist{k}.GBI,'LineWidth',lw2,...
+        'DisplayName',['CMIP6 historical ' gbi_CMIP6_hist{k}.name]);
 end
 
 xlim([x_min x_max]);
 ylim([y_min y_max]);
 legend show
+title('GBI as a weighted mean of the geopotential height at 500hPa pressure level');
+ylabel('GBI [m]');
 hold off;
 
-% % Part 2
-% figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
-% plot(gbi_NOAA.time,gbi_NOAA.GBI,'DisplayName','NOAA (daily) download','LineWidth',lw1);
-% plot(gbi_ERA5.time,gbi_ERA5.GBI,'DisplayName','ERA5 (monthly)','LineWidth',lw1);
-% for k = 6 : length(gbi_CMIP6_hist)
-%     plot(gbi_CMIP6_hist{k}.time,gbi_CMIP6_hist{k}.GBI,'LineWidth',lw2,'DisplayName',['CMIP6 historical ' gbi_CMIP6_hist{k}.name]); % with legend
-% end
-% 
-% xlim([x_min x_max]);
-% ylim([y_min y_max]);
-% legend show
-% hold off;
+% Part 2
+figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
+plot(gbi_NOAA.time,gbi_NOAA_filt,'k','DisplayName',...
+    ['NOAA (daily) download, filtered with windows size ' num2str(ws)],'LineWidth',lw1);
+plot(gbi_ERA5.time,gbi_ERA5.GBI,'DisplayName','ERA5 (monthly)','LineWidth',lw1);
+for k = 6 : length(gbi_CMIP6_hist)
+    plot(gbi_CMIP6_hist{k}.time,gbi_CMIP6_hist{k}.GBI,'LineWidth',lw2,...
+        'DisplayName',['CMIP6 historical ' gbi_CMIP6_hist{k}.name]);
+end
+
+xlim([x_min x_max]);
+ylim([y_min y_max]);
+legend show
+title('GBI as a weighted mean of the geopotential height at 500hPa pressure level');
+ylabel('GBI [m]');
+hold off;
 

@@ -34,15 +34,15 @@ end
 timeunit = split(timeunit);
 unit = timeunit{1};
 if length(timeunit) == 4
-    datestrings = cellfun(@str2double, split(timeunit{3}, '-'));
-    timestrings = cellfun(@str2double, split(timeunit{4}, ':'));
+    datestrings = arrayfun(@str2double, split(timeunit{3}, '-'));
+    timestrings = arrayfun(@str2double, split(timeunit{4}, ':'));
     if length(timestrings) == 3
         starttime = datetime(datestrings(1), datestrings(2), datestrings(3), timestrings(1), timestrings(2), timestrings(3));
     else
         starttime = datetime(datestrings(1), datestrings(2), datestrings(3), timestrings(1), timestrings(2), 0);
     end
 else
-    datestrings = cellfun(@str2double, split(timeunit(3), '-'));
+    datestrings = arrayfun(@str2double, split(timeunit(3), '-'));
     starttime = datetime(datestrings(1), datestrings(2), datestrings(3));
 end
 

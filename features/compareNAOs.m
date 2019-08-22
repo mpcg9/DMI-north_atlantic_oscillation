@@ -8,11 +8,15 @@
 clearvars; close all; clc;
 f = filesep;
 addpath(genpath(cd), genpath(['..' f 'functions']), genpath(['..' f 'data' f 'nao']));
+% *** INPUT ***
+plotmean = true; % plot the mean over all models in the all-together-plot
+                  % (historical and future projections)
 
 %% NAO data preparation
 % general settings
 truncate = 1979;
-extractMonths = [12 1 2];
+extractMonths = [12 1 2]; title_seas = 'winter months (DJF)';
+% extractMonths = [6 7 8]; title_seas = 'summer months (JJA)';
 extractNegPos = false;
 
 %% already calculated naos downloaded from NOAA/CRU
@@ -181,27 +185,34 @@ for k = 1 : length(nao_CMIP6_scen245_filt)
     end
 end
 
+if plotmean == true
 % add the mean values over all models
-% plot(time_interp_hist,nao_CMIP6_hist_mean_filt,'Color',MediumPurple4,'LineWidth',lw,'DisplayName','CMIP6 historical mean');
-% plot(time_interp_scen245,nao_CMIP6_scen245_mean_filt,'LineWidth',lw,'DisplayName','CMIP6 scenario245 mean');
-% plot(time_interp_scen585,nao_CMIP6_scen585_mean_filt,'Color',lila,'LineWidth',lw,'DisplayName','CMIP6 scenario585 mean');
+plot(time_interp_hist,nao_CMIP6_hist_mean_filt,'Color',MediumPurple4,'LineWidth',lw,'DisplayName','CMIP6 historical mean');
+plot(time_interp_scen245,nao_CMIP6_scen245_mean_filt,'LineWidth',lw,'DisplayName','CMIP6 scenario245 mean');
+plot(time_interp_scen585,nao_CMIP6_scen585_mean_filt,'Color',lila,'LineWidth',lw,'DisplayName','CMIP6 scenario585 mean');
 
-% this is only for the title...
-% withorwithoutmean =  'with mean values over all models, ';
+% this is for the title
+withorwithoutmean =  'with mean values over all models, ';
+else
 withorwithoutmean = [];
+end
 
 % add the references
 plot(ax_1,nao_1_filt,'Color','b','LineWidth',lw,'DisplayName','downloaded from CRU');
 plot(ax_2,nao_2_filt,'Color',turquoise4,'LineWidth',lw,'DisplayName','downloaded from NOAA');
 plot(ax_era5,nao_era5_filt,'Color','g','LineWidth',lw,'DisplayName','ERA5 pressure differences');
 
+% add a reference line at y = 0
+zero_line_x = [x_min2;x_max2];
+zero_line_y = [0;0];
+plot(zero_line_x,zero_line_y,'k','LineWidth',1,'HandleVisibility','off');
 
 xlim([x_min2 x_max2]);
 ylim([y_min2 y_max2]);
-legend show
+legend = legend(show);
 hold off;
 title(['NAO data comparison, CMIP6 historical simulations and future projections'...
-    withorwithoutmean 'monthly data, winter months (DJF), filtered (moving average, windows size: ' num2str(ws) ')']);
+    withorwithoutmean 'monthly data, ' title_seas ', filtered (moving average, windows size: ' num2str(ws) ')']);
 
 
 %% CMIP6 historical simulations compared to NOAA/CRU/ERA5
@@ -224,7 +235,7 @@ for k = 1 : 5
 end
 
 hold off;
-title(['NAO data comparison, CMIP6 historical part 1, monthly data, winter months (DJF), filtered (moving average, windows size: ' num2str(ws) ')']);
+title(['NAO data comparison, CMIP6 historical part 1, monthly data, ' title_seas ', filtered (moving average, windows size: ' num2str(ws) ')']);
 legend('NOAA monthly', 'CRU monthly', 'from ERA5 pressure differences',...
     [nao_CMIP6_hist{1}.name ' pressure differences'],...
     [nao_CMIP6_hist{2}.name ' pressure differences'],...
@@ -246,7 +257,7 @@ for k = 6 : length(nao_CMIP6_hist)
 end
 
 hold off;
-title(['NAO data comparison, CMIP6 historical part 2, monthly data, winter months (DJF), filtered (moving average, windows size: ' num2str(ws) ')']);
+title(['NAO data comparison, CMIP6 historical part 2, monthly data, ' title_seas ', filtered (moving average, windows size: ' num2str(ws) ')']);
 legend('NOAA monthly', 'CRU monthly', 'from ERA5 pressure differences',...
     ['from ' nao_CMIP6_hist{6}.name ' pressure differences'],...
     ['from ' nao_CMIP6_hist{7}.name ' pressure differences'],...

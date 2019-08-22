@@ -58,7 +58,7 @@ end
 xlim([x_min x_max]);
 ylim([y_min y_max]);
 legend show
-title('GBI as a weighted mean of the geopotential height at 500hPa pressure level');
+title('GBI as a weighted mean of the geopotential height at 500hPa pressure level part 1');
 ylabel('GBI [m]');
 hold off;
 
@@ -75,7 +75,7 @@ end
 xlim([x_min x_max]);
 ylim([y_min y_max]);
 legend show
-title('GBI as a weighted mean of the geopotential height at 500hPa pressure level');
+title('GBI as a weighted mean of the geopotential height at 500hPa pressure level part 2');
 ylabel('GBI [m]');
 hold off;
 

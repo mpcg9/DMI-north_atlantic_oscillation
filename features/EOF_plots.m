@@ -39,10 +39,28 @@ climval = 3.5; % Set the max/min Value for colorbar (scalar positive)
 cm = cbrewer('div', 'RdBu', 31); % Set Colormap
 modifypapersize = true;
 papersize = [21 21]; % Size of the Paper, in centimeters [21 29.7 for A4]
+createVariancesToTable = true;
+createMaxMinPositionsToTable = true;
+createEOFcomponentsTable = false;
+createLonLatTable = false;
 
 %% EOF Calculation
 noPlot = 0;
 tic;
+
+if saveVariancesToTable
+    varianceTable = zeros(size(folderContents, 1),noEOFs);
+end
+if saveMaxMinPositionsToTable
+    maxPositionsTable = zeros(size(folderContents, 1), 2, noEOFs);
+    minPositionsTable = zeros(size(folderContents, 1), 2, noEOFs);
+end
+if createEOFcomponentsTable
+    eofComponentsTable = cell(size(folderContents, 1), noEOFs);
+end
+if createLonLatTable
+    lonLatTable = cell(size(folderContents, 1), 2);
+end
 
 % subplotsizes = [ceil((noEOFs*(1+plotTimeseries) + plotEigenvalues)/cols), cols];
 for i = 1:size(folderContents, 1)
@@ -92,6 +110,11 @@ for i = 1:size(folderContents, 1)
     clear data;
     [temp_struct, lon_idx] = convert_longitudes(temp_struct, min(Bounds_lon));
     
+    if createLonLatTable
+        lonLatTable{i,1} = temp_struct.(LonName);
+        lonLatTable{i,2} = temp_struct.(LatName);
+    end
+    
     % Compute Eigenvalues
     if plotEigenvalues
         eigenvalues = diag(S).^2./(datasize(3)-1);
@@ -108,6 +131,7 @@ for i = 1:size(folderContents, 1)
     time_series = U*S;
     variances = var(time_series);
     variance_percentages = variances ./ variance_sum;
+    varianceTable(i,:) = variance_percentages;
     clear U S;
     
     %% prepare plotting
@@ -122,7 +146,7 @@ for i = 1:size(folderContents, 1)
         z = reshape(V(:,j), datasize(1), datasize(2));
         
         % Find maximum positions
-        if flipMaxSouth || displayMaxMin
+        if flipMaxSouth || displayMaxMin || saveMaxMinPositionsToTable
             [~,idx] = max(V(:,j));
             [maxPos(1), maxPos(2)] = ind2sub(datasize(1:2), idx);
             [~,idx] = min(V(:,j));
@@ -144,6 +168,15 @@ for i = 1:size(folderContents, 1)
             minPos = temp;
         else
             temp_struct.z = +gridsize*z(lon_idx, :); % Remember that we have resorted longitudes!
+        end
+        
+        if saveMaxMinPositionsToTable
+            maxPositionsTable(i, :, j) = [temp_struct.(LonName)(maxPos(1)) temp_struct.(LatName)(maxPos(2))];
+            minPositionsTable(i, :, j) = [temp_struct.(LonName)(minPos(1)) temp_struct.(LatName)(minPos(2))];
+        end
+        
+        if createEOFcomponentsTable
+            eofComponentsTable{i, j} = temp_struct.z;
         end
         
         %% create map plot

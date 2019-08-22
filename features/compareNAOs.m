@@ -15,8 +15,8 @@ plotmean = true; % plot the mean over all models in the all-together-plot
 %% NAO data preparation
 % general settings
 truncate = 1979;
-extractMonths = [12 1 2]; title_seas = 'winter months (DJF)';
-% extractMonths = [6 7 8]; title_seas = 'summer months (JJA)';
+% extractMonths = [12 1 2]; title_seas = 'winter months (DJF)';
+extractMonths = [6 7 8]; title_seas = 'summer months (JJA)';
 extractNegPos = false;
 
 %% already calculated naos downloaded from NOAA/CRU
@@ -209,7 +209,7 @@ plot(zero_line_x,zero_line_y,'k','LineWidth',1,'HandleVisibility','off');
 
 xlim([x_min2 x_max2]);
 ylim([y_min2 y_max2]);
-legend = legend(show);
+legend show
 hold off;
 title(['NAO data comparison, CMIP6 historical simulations and future projections'...
     withorwithoutmean 'monthly data, ' title_seas ', filtered (moving average, windows size: ' num2str(ws) ')']);

@@ -19,7 +19,8 @@ folderContents = dir(strcat(path, '*.mat'));
 Bounds_lat = [20, 85]; % Boundaries for latitude [in degrees]
 Bounds_lon = [-90, 40]; % Boundaries for longitude [in degrees]
 use_time_bounds = true;
-Bounds_time = datetime({'2080-1-1', '2099-12-31'}, 'InputFormat', 'uuuu-M-d'); % Boundaries for time
+Bounds_time = datetime({'1979-1-1', '2015-12-31'}, 'InputFormat', 'uuuu-M-d'); % Boundaries for time
+use_month_bounds = false;
 Months = [1 1 0 0 0 0  0 0 0 0 0 1]; % Months to be evaluated [J F M A M J  J A S O N D] - Warning: only works if data starts on a January and stops on a December! Will also be applied if use_time_bounds is false.
 noEOFs = 3; % Number of EOFs to calculate.
 % cols = 2; % Number of plot columns per page.
@@ -27,16 +28,17 @@ averageData = true; % Set to true if you wish to calculate the averages for all 
 normalizeByStandardDeviation = false; % Set to true if you additionally wish to normalize the data by its standard deviation
 normalizeByGridSize = true; % Set to true if you wish that every EOF Value is being multiplicated by the square root of the number of grid cells. This normalizes the mean Variance of all EOFs to 1.
 plotEigenvalues = false; % Set to true if you wish to compute and plot the eigenvalues for the EOF components calculated
+useLandscapeModeForEigenvalues = false;
 plotTimeseries = true; % If set to true, a second plot with timeseries will appear
-numPlotColumns = 2; % Set to the number of columns you wish to get in the resulting .ps file.
+useLandscapeModeForTimeseries = false; % If true, the paper will be flipped
 projectionType = 'lambert'; % Select projection to use for plots
-variableName = 'psl'; % Select variable
+variableName = 'auto'; % Select variable
 flipMaxSouth = true; % If set to true, this script wil automatically flip signs in a way that the maximum is always in the south
 displayMaxMin = true; % If set to true, this script will add max/min markers in the plots.
 climval = 3.5; % Set the max/min Value for colorbar (scalar positive)
 cm = cbrewer('div', 'RdBu', 31); % Set Colormap
-modifypapersize = false;
-papersize = [42 60]; % Size of the Paper, in centimeters [21 29.7 for A4]
+modifypapersize = true;
+papersize = [21 21]; % Size of the Paper, in centimeters [21 29.7 for A4]
 
 %% EOF Calculation
 noPlot = 0;
@@ -52,7 +54,16 @@ for i = 1:size(folderContents, 1)
     if use_time_bounds
         data = select_timespan(data, Bounds_time(1), Bounds_time(2), true);
     end
-    data = select_months(data, Months); 
+    if use_month_bounds
+        data = select_months(data, Months); 
+    end
+    
+    % find out variable if set to auto
+    if strcmpi(variableName, 'auto') || useAutoVariableFind
+        useAutoVariableFind = true;
+        variableName = getVariableName(data);
+    end
+    [LonName, LatName] = getLonLatName(data);
     
     % Normalization if desired
     if averageData
@@ -72,8 +83,8 @@ for i = 1:size(folderContents, 1)
     
     % Change Latitude range to work with m_map
     temp_struct = struct;
-    temp_struct.lon = data.lon;
-    temp_struct.lat = data.lat;
+    temp_struct.(LonName) = data.(LonName);
+    temp_struct.(LatName) = data.(LatName);
     if plotTimeseries
         timeticks = data.time;
         units = data.units;
@@ -126,7 +137,7 @@ for i = 1:size(folderContents, 1)
         
         % Flip colors so that the maximum is always in the south for better
         % comparison
-        if flipMaxSouth && maxPos(2) > minPos(2)
+        if flipMaxSouth && temp_struct.(LatName)(maxPos(2)) > temp_struct.(LatName)(minPos(2))
             temp_struct.z = -gridsize*z(lon_idx, :); % Remember that we have resorted longitudes!
             temp = maxPos;
             maxPos = minPos;
@@ -197,11 +208,13 @@ for i = 1:size(folderContents, 1)
             hold on;
             bar(timeticks, time_series(:,j)./gridsize);
             title(['EOF-' num2str(j), '; ', folderContents(i).name], 'Interpreter', 'none');
-            xlabel([ 'Time [d]' ]);
+            xlabel([ 'Time' ]);
             ylabel([ 'Amount']);
             hold off;
-            fig.PaperPositionMode = 'manual';
-            orient(fig, 'landscape');
+            if useLandscapeModeForTimeseries
+                fig.PaperPositionMode = 'manual';
+                orient(fig, 'landscape');
+            end
             print(strcat(s_path, s_file), '-dpsc', '-fillpage', '-append');
         end
     end

@@ -36,10 +36,11 @@ for pair = reshape(varargin,2,[]) % pair is {propName;propValue}
    end
 end
     
+[LonName, LatName] = getLonLatName(data);
     
 % Create figure
 fig = figure('Visible', options.Visible);
-if size(options.modifyPapersize) > 1
+if length(options.modifyPapersize) > 1
     fig.PaperUnits = 'Centimeters';
     fig.PaperSize = options.modifyPapersize;
 end
@@ -51,14 +52,14 @@ end
 colormap(options.colormap);
 
 m_proj(projectionType, 'long', Bounds_lon, 'lat', Bounds_lat);
-m_image(data.lon, data.lat, data.(varName)');
+m_image(data.(LonName), data.(LatName), data.(varName)');
 m_coast('linewidth', 1, 'color', 'black');
 m_grid;
 if length(options.markMinPosition) > 1
-    m_plot(data.lon(options.markMinPosition(1)), data.lat(options.markMinPosition(2)), '*r');
+    m_plot(data.(LonName)(options.markMinPosition(1)), data.(LatName)(options.markMinPosition(2)), '*r');
 end
 if length(options.markMaxPosition) > 1
-    m_plot(data.lon(options.markMaxPosition(1)), data.lat(options.markMaxPosition(2)), '*b');
+    m_plot(data.(LonName)(options.markMaxPosition(1)), data.(LatName)(options.markMaxPosition(2)), '*b');
 end
 xlabel(options.title, 'Interpreter', options.Interpreter);
 colorbar('southoutside');

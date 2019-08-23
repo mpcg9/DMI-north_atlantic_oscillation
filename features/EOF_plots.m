@@ -20,16 +20,16 @@ Bounds_lat = [20, 85]; % Boundaries for latitude [in degrees]
 Bounds_lon = [-90, 40]; % Boundaries for longitude [in degrees]
 use_time_bounds = true;
 Bounds_time = datetime({'1979-1-1', '2015-12-31'}, 'InputFormat', 'uuuu-M-d'); % Boundaries for time
-use_month_bounds = false;
+use_month_bounds = true;
 Months = [1 1 0 0 0 0  0 0 0 0 0 1]; % Months to be evaluated [J F M A M J  J A S O N D] - Warning: only works if data starts on a January and stops on a December! Will also be applied if use_time_bounds is false.
-noEOFs = 3; % Number of EOFs to calculate.
+noEOFs = 1; % Number of EOFs to calculate.
 % cols = 2; % Number of plot columns per page.
 averageData = true; % Set to true if you wish to calculate the averages for all grid points over time and substract it from the data
 normalizeByStandardDeviation = false; % Set to true if you additionally wish to normalize the data by its standard deviation
 normalizeByGridSize = true; % Set to true if you wish that every EOF Value is being multiplicated by the square root of the number of grid cells. This normalizes the mean Variance of all EOFs to 1.
 plotEigenvalues = false; % Set to true if you wish to compute and plot the eigenvalues for the EOF components calculated
 useLandscapeModeForEigenvalues = false;
-plotTimeseries = true; % If set to true, a second plot with timeseries will appear
+plotTimeseries = false; % If set to true, a second plot with timeseries will appear
 useLandscapeModeForTimeseries = false; % If true, the paper will be flipped
 projectionType = 'lambert'; % Select projection to use for plots
 variableName = 'auto'; % Select variable
@@ -39,19 +39,19 @@ climval = 3.5; % Set the max/min Value for colorbar (scalar positive)
 cm = cbrewer('div', 'RdBu', 31); % Set Colormap
 modifypapersize = true;
 papersize = [21 21]; % Size of the Paper, in centimeters [21 29.7 for A4]
-createVariancesToTable = true;
-createMaxMinPositionsToTable = true;
-createEOFcomponentsTable = false;
-createLonLatTable = false;
+createVariancesTable = true;
+createMaxMinPositionsTable = true;
+createEOFcomponentsTable = true;
+createLonLatTable = true;
 
 %% EOF Calculation
 noPlot = 0;
 tic;
 
-if saveVariancesToTable
+if createVariancesTable
     varianceTable = zeros(size(folderContents, 1),noEOFs);
 end
-if saveMaxMinPositionsToTable
+if createMaxMinPositionsTable
     maxPositionsTable = zeros(size(folderContents, 1), 2, noEOFs);
     minPositionsTable = zeros(size(folderContents, 1), 2, noEOFs);
 end
@@ -146,7 +146,7 @@ for i = 1:size(folderContents, 1)
         z = reshape(V(:,j), datasize(1), datasize(2));
         
         % Find maximum positions
-        if flipMaxSouth || displayMaxMin || saveMaxMinPositionsToTable
+        if flipMaxSouth || displayMaxMin || createMaxMinPositionsTable
             [~,idx] = max(V(:,j));
             [maxPos(1), maxPos(2)] = ind2sub(datasize(1:2), idx);
             [~,idx] = min(V(:,j));
@@ -170,7 +170,7 @@ for i = 1:size(folderContents, 1)
             temp_struct.z = +gridsize*z(lon_idx, :); % Remember that we have resorted longitudes!
         end
         
-        if saveMaxMinPositionsToTable
+        if createMaxMinPositionsTable
             maxPositionsTable(i, :, j) = [temp_struct.(LonName)(maxPos(1)) temp_struct.(LatName)(maxPos(2))];
             minPositionsTable(i, :, j) = [temp_struct.(LonName)(minPos(1)) temp_struct.(LatName)(minPos(2))];
         end

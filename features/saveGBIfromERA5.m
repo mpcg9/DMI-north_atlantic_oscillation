@@ -4,12 +4,12 @@
 clearvars; clc;
 addpath(genpath(cd), genpath(['..' filesep 'functions']));
 
-load('D:\ERA5\geopotential\adaptor.mars.internal-1566223570.0957482-19304-5-2da8c9ee-9fe4-40c2-9616-3fb4e947442b.nc.mat');
-% [file,path] = uigetfile('*.mat', 'Please select file to read');
-% load(strcat(path,file));
+% load('D:\ERA5\geopotential\adaptor.mars.internal-1566223570.0957482-19304-5-2da8c9ee-9fe4-40c2-9616-3fb4e947442b.nc.mat');
+[file,path] = uigetfile('*.mat', 'Please select file to read');
+load(strcat(path,file));
 
 % *** INPUT *** --- mean latitude
-lat = 70; % [°]
+lat = 70; % [ï¿½]
 
 % compute latitude-dependent gravitational acceleration
 % this comes from wikipedia: https://en.wikipedia.org/wiki/Gravitational_acceleration
@@ -34,6 +34,6 @@ GBI = struct('time',time);
 GBI = setfield(GBI,'GBI',GBI_temp);
 
 % save
-% uisave('GBI','GBI_ERA5');
-save('C:\Users\Lenovo\Documents\Master\DMI-north_atlantic_oscillation\data\GBI\ERA5\GBI_ERA5.mat','GBI');
+uisave('GBI','GBI_ERA5');
+% save('C:\Users\Lenovo\Documents\Master\DMI-north_atlantic_oscillation\data\GBI\ERA5\GBI_ERA5.mat','GBI');
 

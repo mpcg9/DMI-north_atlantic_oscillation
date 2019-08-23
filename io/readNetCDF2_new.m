@@ -138,7 +138,7 @@ for j=0:nvars-1
     % Check dimensions if there is something to restrict
     cat_necessary = false;
     reduce_plev_dim = false;
-    if restrict_lon || restrict_lat
+    if restrict_lon || restrict_lat || restrict_plev
         for s = 1:length(starts)
             starts{s} = ones(1, length(dimids));
             strides{s}= Inf(1, length(dimids));
@@ -205,10 +205,12 @@ for j=0:nvars-1
     end
     
     % Transformieren der Daten in richtige Einheit
-    if (isnan(fillVal)==0)
-        data.(varname)(data.(varname)==fillVal)=NaN;
+    if ~(restrict_lon || restrict_lat || restrict_plev)
+        if (isnan(fillVal)==0)
+            data.(varname)(data.(varname)==fillVal)=NaN;
+        end
+        data.(varname) = data.(varname)*double(scaleFac) + double(addOff);
     end
-    data.(varname) = data.(varname)*double(scaleFac) + double(addOff);
     
 %     data.(varname)=adat;
     

@@ -24,16 +24,20 @@
 clearvars; close all; clc;
 f = filesep;
 addpath(genpath(cd), genpath(['..' f 'functions']), genpath(['..' f 'data' f 'nao']));
+
 % *** INPUT ***
-season = 'winter';      % the season to be selected out of the data. You have the choice
+season = 'winter';      % The season to be selected out of the data. You have the choice
                         % between winter (DJF), spring(MAM), summer(JJA), autumn(SON).
-extractNegPos = true;   % if negative/positive NAOs get extracted
-truncate = 1979;        % use data only after this date
-plotmean = true;        % plot the mean over all models in the all-together-plot
+extractNegPos = true;   % If negative/positive NAOs get extracted
+extrNPFromSeas = false; % True if the negative/positive NAO should be subtracted from
+                        % the already monthly-extracted data. false if you want to
+                        % extract of the whole year.
+truncate = 1979;        % Use data only after this date
+plotmean = true;        % Plot the mean over all models in the all-together-plot
                         % (historical and future projections)
 
-plot_historical = false;          % plot historical data
-plot_historicalAndFuture = false; % creates a 'messy-plot'
+plot_historical = false;          % Plot historical data
+plot_historicalAndFuture = false; % Creates a 'messy-plot'
 
 %% 1. NAO data preparation
 % general
@@ -56,11 +60,11 @@ reshape_1 = true;
 replace_1 = -99.99;
 
 % NOAA monthly
-[~,~,nao_NOAA_wint,nao_NOAA_negpos] = prepareNAOs([folderName f 'nao_1.data'],...
-    reshape_1,replace_1,truncate,extractMonths,extractNegPos);
+[~,~,nao_NOAA_wint,nao_NOAA_np] = prepareNAOs([folderName f 'nao_1.data'],...
+    reshape_1,replace_1,truncate,extractMonths,extractNegPos,extrNPFromSeas);
 % CRU monthly
 [~,~,nao_CRU_wint] = prepareNAOs([folderName f 'nao_2.data'],...
-    reshape_1,replace_1,truncate,extractMonths,extractNegPos);
+    reshape_1,replace_1,truncate,extractMonths,extractNegPos,extrNPFromSeas);
 
 %% 1.2 computed as pressure differences with data from ERA5
 % settings
@@ -68,8 +72,8 @@ folderName = 'ERA5';
 reshape_2 = false;
 replace_2 = [];
 
-[~,~,nao_ERA5_wint] = prepareNAOs([folderName f 'diffNAO_ERA5.mat'],...
-    reshape_2,replace_2,truncate, extractMonths,extractNegPos);
+[~,~,nao_ERA5_wint,nao_ERA5_np] = prepareNAOs([folderName f 'diffNAO_ERA5.mat'],...
+    reshape_2,replace_2,truncate, extractMonths,extractNegPos,extrNPFromSeas);
 
 %% 1.3 computed as pressure differences with data from CMIP6 - historical
 % settings
@@ -80,9 +84,10 @@ path = '..\data\nao\CMIP6_psl historical\';
 folderContents = dir(strcat(path, '*.mat'));
 
 for i = 1 : size(folderContents, 1)
-    [~,~,nao_CMIP6_hist{i}] = prepareNAOs(strcat(path,folderContents(i).name),...
-        reshape_3,replace_3,truncate, extractMonths,extractNegPos);
+    [~,~,nao_CMIP6_hist{i},nao_CMIP6_hist_np{i}] = prepareNAOs(strcat(path,folderContents(i).name),...
+        reshape_3,replace_3,truncate, extractMonths,extractNegPos,extrNPFromSeas);
     nao_CMIP6_hist{i}.name = strrep(folderContents(i).name,'_',' ');
+    nao_CMIP6_hist_np{i}.name = strrep(folderContents(i).name,'_',' ');
 end
 
 %% 1.4 computed as pressure differences with data from CMIP6 - scenario ssp245
@@ -94,9 +99,10 @@ path = '..\data\nao\CMIP6_psl_scenarios_ssp245\';
 folderContents = dir(strcat(path, '*.mat'));
 
 for i = 1 : size(folderContents, 1)
-    [~,~,nao_CMIP6_scen245{i}] = prepareNAOs(strcat(path,folderContents(i).name),...
-        reshape_4,replace_4,truncate, extractMonths,extractNegPos);
+    [~,~,nao_CMIP6_scen245{i},nao_CMIP6_scen245_np{i}] = prepareNAOs(strcat(path,folderContents(i).name),...
+        reshape_4,replace_4,truncate, extractMonths,extractNegPos,extrNPFromSeas);
     nao_CMIP6_scen245{i}.name = strrep(folderContents(i).name,'_',' ');
+    nao_CMIP6_scen245_np{i}.name = strrep(folderContents(i).name,'_',' ');
 end
 
 %% 1.5 computed as pressure differences with data from CMIP6 - scenario ssp585
@@ -108,9 +114,10 @@ path = '..\data\nao\CMIP6_psl_scenarios_ssp585\';
 folderContents = dir(strcat(path, '*.mat'));
 
 for i = 1 : size(folderContents, 1)
-    [~,~,nao_CMIP6_scen585{i}] = prepareNAOs(strcat(path,folderContents(i).name),...
-        reshape_5,replace_5,truncate, extractMonths,extractNegPos);
+    [~,~,nao_CMIP6_scen585{i},nao_CMIP6_scen585_np{i}] = prepareNAOs(strcat(path,folderContents(i).name),...
+        reshape_5,replace_5,truncate, extractMonths,extractNegPos,extrNPFromSeas);
     nao_CMIP6_scen585{i}.name = strrep(folderContents(i).name,'_',' ');
+    nao_CMIP6_scen585_np{i}.name = strrep(folderContents(i).name,'_',' ');
 end
 
 clear truncate extractMonths extractNegPos reshape_1 reshape_2 reshape_3...
@@ -288,4 +295,9 @@ if plot_historicalAndFuture == true
     
 end
 %% 5. Evaluation of negative/positive NAOs
+
+
+
+
+
 

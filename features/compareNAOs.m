@@ -98,7 +98,7 @@ clear truncate extractMonths extractNegPos reshape_1 reshape_2 reshape_3...
 
 %% Filtering
 a = 1;
-% windows size for monthly data
+% window size for monthly data
 ws = 3; % average of 3 values
 b = (1/ws)*ones(1,ws);
 

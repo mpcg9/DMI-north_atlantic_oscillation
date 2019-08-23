@@ -17,11 +17,7 @@ g_poles = 9.832; g45 = 9.806; g_equat = 9.780; % [m/s^2]
 g = g45 - 0.5 * (g_poles - g_equat) * cos(2*lat*pi/180);
 % g = 9.80665; % (standard)
 
-% % now its getting crazy: geopotential changes with height
-% g = sqrt(g);
-
-z_meters = data.z ./ g;
-data = setfield(data,'z_meters',z_meters);
+data.z = data.z ./ g;
 
 % compute GBI
 GBI_temp = compute_GBI(data);

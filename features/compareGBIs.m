@@ -8,9 +8,9 @@ clearvars; close all; clc;
 f = filesep;
 addpath(genpath(cd), genpath(['..' f 'functions']), genpath(['..' f 'data' f 'GBI']));
 
-plot_historical = true; % plot historical data
-plot_future = true; % plot historical data from future scenarios SSP245 and SSP585
-plot_stdev = true; % running standard deviation
+plot_historical = true;          % plot historical data
+plot_future = true;              % plot historical data from future scenarios SSP245 and SSP585
+plot_stdev = true;               % running standard deviation
 plot_historicalAndFuture = true; % creates a 'messy-plot'
 
 %% load data

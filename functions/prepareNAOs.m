@@ -40,9 +40,6 @@ if isempty(varargin{3}) ~= 1
     if exist('nao_re','var') == 1
         nao = nao_re;
     else
-        %         data_fields = fieldnames(nao_orig);
-        %         fieldname = data_fields(1);
-        %         nao = nao_orig.fieldname;
         nao = nao_orig.nao;
     end
     date = datetime(varargin{3},1,1);

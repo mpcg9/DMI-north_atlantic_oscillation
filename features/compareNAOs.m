@@ -38,6 +38,7 @@ plotmean = true;        % Plot the mean over all models in the all-together-plot
 
 plot_historical = false;          % Plot historical data
 plot_historicalAndFuture = false; % Creates a 'messy-plot'
+plot_negposBars = false;          % simple bar plot of the dates of negative/positive NAOs
 
 %% 1. NAO data preparation
 % general
@@ -63,7 +64,7 @@ replace_1 = -99.99;
 [~,~,nao_NOAA_wint,nao_NOAA_np] = prepareNAOs([folderName f 'nao_1.data'],...
     reshape_1,replace_1,truncate,extractMonths,extractNegPos,extrNPFromSeas);
 % CRU monthly
-[~,~,nao_CRU_wint] = prepareNAOs([folderName f 'nao_2.data'],...
+[~,~,nao_CRU_wint,nao_CRU_np] = prepareNAOs([folderName f 'nao_2.data'],...
     reshape_1,replace_1,truncate,extractMonths,extractNegPos,extrNPFromSeas);
 
 %% 1.2 computed as pressure differences with data from ERA5
@@ -189,6 +190,8 @@ colors.DarkGoldenrod1 = [255,185,15] ./ 255;
 colors.MediumPurple4 = [93,71,139] ./ 255;
 colors.IndianRed = [255,106,106] ./ 255;
 colors.turquoise4 = [0,134,139] ./ 255;
+colors.darkBlue = [0,0,139] ./ 255;
+colors.red = [1 0 0];
 
 %% 4.2 CMIP6 historical simulations compared to NOAA/CRU/ERA5
 % axis settings
@@ -295,6 +298,100 @@ if plot_historicalAndFuture == true
     
 end
 %% 5. Evaluation of negative/positive NAOs
+%% simple plots
+if plot_negposBars == true
+    % settings
+    size = 1;
+
+    h1 = figure('visible','off','units','normalized','outerposition',[0 0 1 1]);
+    grid on; hold on;
+    plotPosNegNAOs(nao_NOAA_np.time_neg,size,'neg');
+    plotPosNegNAOs(nao_NOAA_np.time_pos,size,'pos');
+    hold off; title('negative/positive NAOs, NOAA');
+    print(h1,'-append','-dpsc','negposNAOs.ps','-fillpage');
+    
+    h2 = figure('visible','off','units','normalized','outerposition',[0 0 1 1]);
+    grid on; hold on;
+    plotPosNegNAOs(nao_CRU_np.time_neg,size,'neg');
+    plotPosNegNAOs(nao_CRU_np.time_pos,size,'pos');
+    hold off; title('negative/positive NAOs, CRU');
+    print(h2,'-append','-dpsc','negposNAOs.ps','-fillpage');
+    
+    for k = 1 : length(nao_CMIP6_hist_np)
+        h = figure('visible','off','units','normalized','outerposition',[0 0 1 1]);
+        grid on; hold on;
+        plotPosNegNAOs(nao_CMIP6_hist_np{k}.time_neg,size,'neg');
+        plotPosNegNAOs(nao_CMIP6_hist_np{k}.time_pos,size,'pos');
+        hold off; title(['negative/positive NAOs, CMIP6 historical ' nao_CMIP6_hist{k}.name]);
+        print(h,'-append','-dpsc','negposNAOs.ps','-fillpage');
+    end
+    
+    for k = 1 : length(nao_CMIP6_scen245_np)
+        h = figure('visible','off','units','normalized','outerposition',[0 0 1 1]);
+        grid on; hold on;
+        plotPosNegNAOs(nao_CMIP6_scen245_np{k}.time_neg,size,'neg');
+        plotPosNegNAOs(nao_CMIP6_scen245_np{k}.time_pos,size,'pos');
+        hold off; title(['negative/positive NAOs, CMIP6 SSP585 ' nao_CMIP6_scen245{k}.name]);
+        print(h,'-append','-dpsc','negposNAOs.ps','-fillpage');
+    end
+    
+    for k = 1 : length(nao_CMIP6_scen585_np)
+        h = figure('visible','off','units','normalized','outerposition',[0 0 1 1]);
+        grid on; hold on;
+        plotPosNegNAOs(nao_CMIP6_scen585_np{k}.time_neg,size,'neg');
+        plotPosNegNAOs(nao_CMIP6_scen585_np{k}.time_pos,size,'pos');
+        hold off; title(['negative/positive NAOs, CMIP6 SSP245 ' nao_CMIP6_scen585{k}.name]);
+        print(h,'-append','-dpsc','negposNAOs.ps','-fillpage');
+    end
+end
+
+%% counting several sequent positive/negative values
+% how long has the NAO been negative/positive without interruption?
+sev_neg_NOAA = countPosNegNAOs(nao_NOAA_np.time_neg);
+sev_pos_NOAA = countPosNegNAOs(nao_NOAA_np.time_pos);
+sev_neg_CRU = countPosNegNAOs(nao_CRU_np.time_neg);
+sev_pos_CRU = countPosNegNAOs(nao_CRU_np.time_pos);
+sev_neg_ERA5 = countPosNegNAOs(nao_ERA5_np.time_neg);
+sev_pos_ERA5 = countPosNegNAOs(nao_ERA5_np.time_pos);
+
+for k = 1 : length(nao_CMIP6_hist_np)
+    sev_neg_CMIP6_hist{k} = countPosNegNAOs(nao_CMIP6_hist_np{k}.time_neg);
+    sev_pos_CMIP6_hist{k} = countPosNegNAOs(nao_CMIP6_hist_np{k}.time_pos);
+end
+
+for k = 1 : length(nao_CMIP6_scen245_np)
+    sev_neg_CMIP6_scen245{k} = countPosNegNAOs(nao_CMIP6_scen245_np{k}.time_neg);
+    sev_pos_CMIP6_scen245{k} = countPosNegNAOs(nao_CMIP6_scen245_np{k}.time_pos);
+end
+
+for k = 1 : length(nao_CMIP6_scen245_np)
+    sev_neg_CMIP6_scen585{k} = countPosNegNAOs(nao_CMIP6_scen585_np{k}.time_neg);
+    sev_pos_CMIP6_scen585{k} = countPosNegNAOs(nao_CMIP6_scen585_np{k}.time_pos);
+end
+
+%% try some statistics
+
+% settings
+max_months = 25;
+
+figure('units','normalized','outerposition',[0 0 1 1]);
+plotPosNegBars(max_months,sev_neg_NOAA,sev_neg_CRU,sev_neg_ERA5);
+legend('NOAA','CRU','ERA5');
+
+figure('units','normalized','outerposition',[0 0 1 1]); hold on;
+for k = 1 : length(sev_neg_CMIP6_hist)
+    plotPosNegBars(max_months,sev_neg_CMIP6_hist{k}); legend(nao_CMIP6_hist{k}.name);
+end
+hold off;
+
+for k = 1 : length(sev_neg_CMIP6_scen245)
+    plotPosNegBars(sev_neg_CMIP6_scen245{k},'b',0.05); legend(nao_CMIP6_scen245{k}.name);
+end
+
+for k = 1 : length(sev_neg_CMIP6_scen585)
+    plotPosNegBars(sev_neg_CMIP6_scen585{k},'b',0.05); legend(nao_CMIP6_scen585{k}.name);
+end
+
 
 
 

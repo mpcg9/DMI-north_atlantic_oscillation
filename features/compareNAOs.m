@@ -27,18 +27,19 @@ addpath(genpath(cd), genpath(['..' f 'functions']), genpath(['..' f 'data' f 'na
 
 % *** INPUT ***
 season = 'winter';      % The season to be selected out of the data. You have the choice
-                        % between winter (DJF), spring(MAM), summer(JJA), autumn(SON).
+% between winter (DJF), spring(MAM), summer(JJA), autumn(SON).
 extractNegPos = true;   % If negative/positive NAOs get extracted
 extrNPFromSeas = false; % True if the negative/positive NAO should be subtracted from
-                        % the already monthly-extracted data. false if you want to
-                        % extract of the whole year.
+% the already monthly-extracted data. false if you want to
+% extract of the whole year.
 truncate = 1979;        % Use data only after this date
 plotmean = true;        % Plot the mean over all models in the all-together-plot
-                        % (historical and future projections)
+% (historical and future projections)
 
 plot_historical = false;          % Plot historical data
 plot_historicalAndFuture = false; % Creates a 'messy-plot'
 plot_negposBars = false;          % simple bar plot of the dates of negative/positive NAOs
+plot_negposStatistics = false;    % bar plots with the number of occurrences of negative/positive NAOs
 
 %% 1. NAO data preparation
 % general
@@ -302,7 +303,7 @@ end
 if plot_negposBars == true
     % settings
     size = 1;
-
+    
     h1 = figure('visible','off','units','normalized','outerposition',[0 0 1 1]);
     grid on; hold on;
     plotPosNegNAOs(nao_NOAA_np.time_neg,size,'neg');
@@ -370,29 +371,77 @@ for k = 1 : length(nao_CMIP6_scen245_np)
 end
 
 %% try some statistics
-
-% settings
-max_months = 25;
-
-figure('units','normalized','outerposition',[0 0 1 1]);
-plotPosNegBars(max_months,sev_neg_NOAA,sev_neg_CRU,sev_neg_ERA5);
-legend('NOAA','CRU','ERA5');
-
-figure('units','normalized','outerposition',[0 0 1 1]); hold on;
-for k = 1 : length(sev_neg_CMIP6_hist)
-    plotPosNegBars(max_months,sev_neg_CMIP6_hist{k}); legend(nao_CMIP6_hist{k}.name);
+if plot_negposStatistics == true
+    % combine NOAA, CRU and ERA5
+    sev_neg_ref_dat = {sev_neg_NOAA,sev_neg_CRU,sev_neg_ERA5};
+    sev_pos_ref_dat = {sev_pos_NOAA,sev_pos_CRU,sev_pos_ERA5};
+    % settings
+    max_months = 25;
+    % y_min4 = 0; y_max4 = 1500;
+    x_min4 = 0; x_max4 = 10;
+    
+    % negative, historical
+    h1 = plotPosNegBars(max_months,sev_neg_CMIP6_hist,sev_neg_ref_dat);
+    legend([cellstr(nao_CMIP6_hist{1}.name),cellstr(nao_CMIP6_hist{2}.name),cellstr(nao_CMIP6_hist{3}.name),...
+        cellstr(nao_CMIP6_hist{4}.name),cellstr(nao_CMIP6_hist{5}.name),cellstr(nao_CMIP6_hist{6}.name),...
+        cellstr(nao_CMIP6_hist{7}.name),cellstr(nao_CMIP6_hist{8}.name),cellstr(nao_CMIP6_hist{9}.name),...
+        cellstr(nao_CMIP6_hist{10}.name),'NOAA','CRU','ERA5']);
+    title('number of negative NAO values - CMIP6 historical');
+    xlim([x_min4 x_max4]); % ylim([y_min4 y_max4]);
+    orient(h1,'landscape');
+    print(h1,'-append','-dpsc','negposNAOStatistics.ps','-fillpage');
+    
+    % negative, SSP245
+    h2 = plotPosNegBars(max_months,sev_neg_CMIP6_scen245,sev_neg_ref_dat);
+    legend([cellstr(nao_CMIP6_scen245{1}.name),cellstr(nao_CMIP6_scen245{2}.name),cellstr(nao_CMIP6_scen245{3}.name),...
+        cellstr(nao_CMIP6_scen245{4}.name),cellstr(nao_CMIP6_scen245{5}.name),cellstr(nao_CMIP6_scen245{6}.name),...
+        cellstr(nao_CMIP6_scen245{7}.name),cellstr(nao_CMIP6_scen245{8}.name),'NOAA','CRU','ERA5']);
+    title('number of negative NAO values - CMIP6 SSP245');
+    xlim([x_min4 x_max4]); % ylim([y_min4 y_max4]);
+    orient(h2,'landscape');
+    print(h2,'-append','-dpsc','negposNAOStatistics.ps','-fillpage');
+    
+    % negative, SSP585
+    h3 = plotPosNegBars(max_months,sev_neg_CMIP6_scen585,sev_neg_ref_dat);
+    legend([cellstr(nao_CMIP6_scen585{1}.name),cellstr(nao_CMIP6_scen585{2}.name),cellstr(nao_CMIP6_scen585{3}.name),...
+        cellstr(nao_CMIP6_scen585{4}.name),cellstr(nao_CMIP6_scen585{5}.name),cellstr(nao_CMIP6_scen585{6}.name),...
+        cellstr(nao_CMIP6_scen585{7}.name),cellstr(nao_CMIP6_scen585{8}.name),'NOAA','CRU','ERA5']);
+    title('number of negative NAO values - CMIP6 SSP585');
+    xlim([x_min4 x_max4]); % ylim([y_min4 y_max4]);
+    orient(h3,'landscape');
+    print(h3,'-append','-dpsc','negposNAOStatistics.ps','-fillpage');
+    
+    % positive, historical
+    h4 = plotPosNegBars(max_months,sev_pos_CMIP6_hist,sev_pos_ref_dat);
+    legend([cellstr(nao_CMIP6_hist{1}.name),cellstr(nao_CMIP6_hist{2}.name),cellstr(nao_CMIP6_hist{3}.name),...
+        cellstr(nao_CMIP6_hist{4}.name),cellstr(nao_CMIP6_hist{5}.name),cellstr(nao_CMIP6_hist{6}.name),...
+        cellstr(nao_CMIP6_hist{7}.name),cellstr(nao_CMIP6_hist{8}.name),cellstr(nao_CMIP6_hist{9}.name),...
+        cellstr(nao_CMIP6_hist{10}.name),'NOAA','CRU','ERA5']);
+    title('number of positive NAO values - CMIP6 historical');
+    xlim([x_min4 x_max4]); % ylim([y_min4 y_max4]);
+    orient(h4,'landscape');
+    print(h4,'-append','-dpsc','negposNAOStatistics.ps','-fillpage');
+    
+    % positive, SSP245
+    h5 = plotPosNegBars(max_months,sev_pos_CMIP6_scen245,sev_pos_ref_dat);
+    legend([cellstr(nao_CMIP6_scen245{1}.name),cellstr(nao_CMIP6_scen245{2}.name),cellstr(nao_CMIP6_scen245{3}.name),...
+        cellstr(nao_CMIP6_scen245{4}.name),cellstr(nao_CMIP6_scen245{5}.name),cellstr(nao_CMIP6_scen245{6}.name),...
+        cellstr(nao_CMIP6_scen245{7}.name),cellstr(nao_CMIP6_scen245{8}.name),'NOAA','CRU','ERA5']);
+    title('number of positive NAO values - CMIP6 SSP245');
+    xlim([x_min4 x_max4]); % ylim([y_min4 y_max4]);
+    orient(h5,'landscape');
+    print(h5,'-append','-dpsc','negposNAOStatistics.ps','-fillpage');
+    
+    % positive, SSP585
+    h6 = plotPosNegBars(max_months,sev_pos_CMIP6_scen585,sev_pos_ref_dat);
+    legend([cellstr(nao_CMIP6_scen585{1}.name),cellstr(nao_CMIP6_scen585{2}.name),cellstr(nao_CMIP6_scen585{3}.name),...
+        cellstr(nao_CMIP6_scen585{4}.name),cellstr(nao_CMIP6_scen585{5}.name),cellstr(nao_CMIP6_scen585{6}.name),...
+        cellstr(nao_CMIP6_scen585{7}.name),cellstr(nao_CMIP6_scen585{8}.name),'NOAA','CRU','ERA5']);
+    title('number of positive NAO values - CMIP6 SSP585');
+    xlim([x_min4 x_max4]); % ylim([y_min4 y_max4]);
+    orient(h6,'landscape');
+    print(h6,'-append','-dpsc','negposNAOStatistics.ps','-fillpage');
 end
-hold off;
-
-for k = 1 : length(sev_neg_CMIP6_scen245)
-    plotPosNegBars(sev_neg_CMIP6_scen245{k},'b',0.05); legend(nao_CMIP6_scen245{k}.name);
-end
-
-for k = 1 : length(sev_neg_CMIP6_scen585)
-    plotPosNegBars(sev_neg_CMIP6_scen585{k},'b',0.05); legend(nao_CMIP6_scen585{k}.name);
-end
-
-
 
 
 

@@ -22,7 +22,7 @@
 %       5.1 The 'usual' plots
 %       5.2 Counting several sequent positive/negative values
 %       5.3 Graphical representation of several sequent neg/pos values
-%       5.4 Statistics 
+%       5.4 Statistics
 
 %% 0. settings
 clearvars; close all; clc;
@@ -40,10 +40,12 @@ truncate = 1979;        % Use data only after this date
 plotmean = true;        % Plot the mean over all models in the all-together-plot
 % (historical and future projections)
 
-plot_historical = false;          % Plot historical data
-plot_historicalAndFuture = false; % Creates a 'messy-plot'
-plot_negposBars = false;          % simple bar plot of the dates of negative/positive NAOs
-plot_negposStatistics = false;    % bar plots with the number of occurrences of negative/positive NAOs
+plot_historical = false;                % see 4.2, Plot historical data
+plot_historicalAndFuture = false;       % see 4.3, Creates a 'messy-plot'
+plot_negposBars = false;                % see 5.1, the classical bar plot of the dates of negative/positive NAOs
+plotNegPosNAOVisualization = false;     % see 5.3, NAO persistence 
+plot_negposStatistics = true;           % see 5.4, bar plots with the number of occurrences of negative/positive NAOs
+ 
 
 %% 1. NAO data preparation
 % general
@@ -93,7 +95,12 @@ for i = 1 : size(folderContents, 1)
     [~,~,nao_CMIP6_hist{i},nao_CMIP6_hist_np{i}] = prepareNAOs(strcat(path,folderContents(i).name),...
         reshape_3,replace_3,truncate, extractMonths,extractNegPos,extrNPFromSeas);
     nao_CMIP6_hist{i}.name = strrep(folderContents(i).name,'_',' ');
-    nao_CMIP6_hist_np{i}.name = strrep(folderContents(i).name,'_',' ');
+    nao_CMIP6_hist{i}.name = erase(nao_CMIP6_hist{i}.name,'diffNAO psl Amon ');
+    nao_CMIP6_hist{i}.name = erase(nao_CMIP6_hist{i}.name,' historical r1i1p1f1 gn.mat');
+    nao_CMIP6_hist{i}.name = erase(nao_CMIP6_hist{i}.name,' historical r1i1p1f1 gn.nc.mat');
+    nao_CMIP6_hist{i}.name = erase(nao_CMIP6_hist{i}.name,' historical r1i1p1f2 gn.nc.mat');
+    nao_CMIP6_hist{i}.name = erase(nao_CMIP6_hist{i}.name,' historical r1i1p1f1 gr.nc.mat');
+    nao_CMIP6_hist{i}.name = erase(nao_CMIP6_hist{i}.name,' historical r1i1p1f2 gr.nc.mat');
 end
 
 %% 1.4 computed as pressure differences with data from CMIP6 - scenario ssp245
@@ -108,7 +115,10 @@ for i = 1 : size(folderContents, 1)
     [~,~,nao_CMIP6_scen245{i},nao_CMIP6_scen245_np{i}] = prepareNAOs(strcat(path,folderContents(i).name),...
         reshape_4,replace_4,truncate, extractMonths,extractNegPos,extrNPFromSeas);
     nao_CMIP6_scen245{i}.name = strrep(folderContents(i).name,'_',' ');
-    nao_CMIP6_scen245_np{i}.name = strrep(folderContents(i).name,'_',' ');
+    nao_CMIP6_scen245{i}.name = erase(nao_CMIP6_scen245{i}.name,'diffNAO psl Amon ');
+    nao_CMIP6_scen245{i}.name = erase(nao_CMIP6_scen245{i}.name,' ssp245 r1i1p1f1nc.mat');
+    nao_CMIP6_scen245{i}.name = erase(nao_CMIP6_scen245{i}.name,' ssp245 r1i1p1f1.mat');
+    nao_CMIP6_scen245{i}.name = erase(nao_CMIP6_scen245{i}.name,' ssp245 r1i1p1f2.mat');
 end
 
 %% 1.5 computed as pressure differences with data from CMIP6 - scenario ssp585
@@ -123,7 +133,11 @@ for i = 1 : size(folderContents, 1)
     [~,~,nao_CMIP6_scen585{i},nao_CMIP6_scen585_np{i}] = prepareNAOs(strcat(path,folderContents(i).name),...
         reshape_5,replace_5,truncate, extractMonths,extractNegPos,extrNPFromSeas);
     nao_CMIP6_scen585{i}.name = strrep(folderContents(i).name,'_',' ');
-    nao_CMIP6_scen585_np{i}.name = strrep(folderContents(i).name,'_',' ');
+    nao_CMIP6_scen585{i}.name = erase(nao_CMIP6_scen585{i}.name,'diffNAO psl Amon ');
+    nao_CMIP6_scen585{i}.name = erase(nao_CMIP6_scen585{i}.name,' ssp585 r1i1p1f1nc.mat');
+    nao_CMIP6_scen585{i}.name = erase(nao_CMIP6_scen585{i}.name,' ssp585 r1i1p1f1.mat');
+    nao_CMIP6_scen585{i}.name = erase(nao_CMIP6_scen585{i}.name,' ssp585 r1i1p1f2.mat');
+    nao_CMIP6_scen585{i}.name = erase(nao_CMIP6_scen585{i}.name,' ssp585 r1i1p1f1-230012.mat');
 end
 
 clear truncate extractMonths extractNegPos reshape_1 reshape_2 reshape_3...
@@ -309,7 +323,7 @@ if plot_negposBars == true
     size = 1;
     
     h1 = figure('visible','off','units','normalized','outerposition',[0 0 1 1]);
-    grid on; hold on;  
+    grid on; hold on;
     plotPosNegNAOs(nao_NOAA_np.time_neg,size,'neg');
     plotPosNegNAOs(nao_NOAA_np.time_pos,size,'pos');
     hold off; title('negative/positive NAOs, NOAA');
@@ -384,80 +398,82 @@ for k = 1 : length(nao_CMIP6_scen245_np)
 end
 
 %% 5.3 Graphical representation of several sequent neg/pos values
-
-% settings
-size = 0.1;
-
-startdate = datetime(1979,1,1);
-enddate = datetime(2015,1,1);
-for x_min = startdate : calendarDuration(10,1,1) : enddate
-    h = figure('visible','off','units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
-    plotSevPosNegNAOs(sev_neg_NOAA,size,'neg',x_min);
-    plotSevPosNegNAOs(sev_pos_NOAA,size,'pos',x_min);
-    hold off; title('Persistence of negative/positive NAO in NOAA');
-    orient(h,'landscape');
-    print(h,'-append','-dpsc','negposNAOVisualization.ps','-fillpage');
-end
-
-startdate = datetime(1979,1,1);
-enddate = datetime(2015,1,1);
-for x_min = startdate : calendarDuration(10,1,1) : enddate
-    h = figure('visible','off','units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
-    plotSevPosNegNAOs(sev_neg_CRU,size,'neg',x_min);
-    plotSevPosNegNAOs(sev_pos_CRU,size,'pos',x_min);
-    hold off; title('Persistence of negative/positive NAO in CRU');
-    orient(h,'landscape');
-    print(h,'-append','-dpsc','negposNAOVisualization.ps','-fillpage');
-end
-
-startdate = datetime(1979,1,1);
-enddate = datetime(2015,1,1);
-for x_min = startdate : calendarDuration(10,1,1) : enddate
-    h = figure('visible','off','units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
-    plotSevPosNegNAOs(sev_neg_ERA5,size,'neg',x_min);
-    plotSevPosNegNAOs(sev_pos_ERA5,size,'pos',x_min);
-    hold off; title('Persistence of negative/positive NAO in ERA5');
-    orient(h,'landscape');
-    print(h,'-append','-dpsc','negposNAOVisualization.ps','-fillpage');
-end
-
-startdate = datetime(1979,1,1);
-enddate = datetime(2015,1,1);
-for x_min = startdate : calendarDuration(10,1,1) : enddate
-    for k = 1 : length(sev_neg_CMIP6_hist)
+if plotNegPosNAOVisualization == true
+    % settings
+    size = 0.1;
+    
+    startdate = datetime(1979,1,1);
+    enddate = datetime(2015,1,1);
+    for x_min = startdate : calendarDuration(10,1,1) : enddate
         h = figure('visible','off','units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
-        plotSevPosNegNAOs(sev_neg_CMIP6_hist{k},size,'neg',x_min);
-        plotSevPosNegNAOs(sev_pos_CMIP6_hist{k},size,'pos',x_min);
-        hold off; title(['Persistence of negative/positive NAO in CMIP6 historical ' nao_CMIP6_hist{k}.name]);
+        plotSevPosNegNAOs(sev_neg_NOAA,size,'neg',x_min);
+        plotSevPosNegNAOs(sev_pos_NOAA,size,'pos',x_min);
+        hold off; title('Persistence of negative/positive NAO in NOAA');
         orient(h,'landscape');
         print(h,'-append','-dpsc','negposNAOVisualization.ps','-fillpage');
     end
-end
-
-startdate = datetime(2013,1,1);
-enddate = datetime(2100,1,1);
-for x_min = startdate : calendarDuration(10,1,1) : enddate
-    for k = 1 : length(sev_neg_CMIP6_scen245)
+    
+    startdate = datetime(1979,1,1);
+    enddate = datetime(2015,1,1);
+    for x_min = startdate : calendarDuration(10,1,1) : enddate
         h = figure('visible','off','units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
-        plotSevPosNegNAOs(sev_neg_CMIP6_scen245{k},size,'neg',x_min);
-        plotSevPosNegNAOs(sev_pos_CMIP6_scen245{k},size,'pos',x_min);
-        hold off; title(['Persistence of negative/positive NAO in CMIP6 SSP245 ' nao_CMIP6_scen245{k}.name]);
+        plotSevPosNegNAOs(sev_neg_CRU,size,'neg',x_min);
+        plotSevPosNegNAOs(sev_pos_CRU,size,'pos',x_min);
+        hold off; title('Persistence of negative/positive NAO in CRU');
         orient(h,'landscape');
         print(h,'-append','-dpsc','negposNAOVisualization.ps','-fillpage');
     end
-end
-
-startdate = datetime(2013,1,1);
-enddate = datetime(2100,1,1);
-for x_min = startdate : calendarDuration(10,1,1) : enddate
-    for k = 1 : length(sev_neg_CMIP6_scen585)
+    
+    startdate = datetime(1979,1,1);
+    enddate = datetime(2015,1,1);
+    for x_min = startdate : calendarDuration(10,1,1) : enddate
         h = figure('visible','off','units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
-        plotSevPosNegNAOs(sev_neg_CMIP6_scen585{k},size,'neg',x_min);
-        plotSevPosNegNAOs(sev_pos_CMIP6_scen585{k},size,'pos',x_min);
-        hold off; title(['Persistence of negative/positive NAO in CMIP6 SSP585 ' nao_CMIP6_scen585{k}.name]);
+        plotSevPosNegNAOs(sev_neg_ERA5,size,'neg',x_min);
+        plotSevPosNegNAOs(sev_pos_ERA5,size,'pos',x_min);
+        hold off; title('Persistence of negative/positive NAO in ERA5');
         orient(h,'landscape');
         print(h,'-append','-dpsc','negposNAOVisualization.ps','-fillpage');
     end
+    
+    startdate = datetime(1979,1,1);
+    enddate = datetime(2015,1,1);
+    for x_min = startdate : calendarDuration(10,1,1) : enddate
+        for k = 1 : length(sev_neg_CMIP6_hist)
+            h = figure('visible','off','units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
+            plotSevPosNegNAOs(sev_neg_CMIP6_hist{k},size,'neg',x_min);
+            plotSevPosNegNAOs(sev_pos_CMIP6_hist{k},size,'pos',x_min);
+            hold off; title(['Persistence of negative/positive NAO in CMIP6 historical ' nao_CMIP6_hist{k}.name]);
+            orient(h,'landscape');
+            print(h,'-append','-dpsc','negposNAOVisualization.ps','-fillpage');
+        end
+    end
+    
+    startdate = datetime(2013,1,1);
+    enddate = datetime(2100,1,1);
+    for x_min = startdate : calendarDuration(10,1,1) : enddate
+        for k = 1 : length(sev_neg_CMIP6_scen245)
+            h = figure('visible','off','units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
+            plotSevPosNegNAOs(sev_neg_CMIP6_scen245{k},size,'neg',x_min);
+            plotSevPosNegNAOs(sev_pos_CMIP6_scen245{k},size,'pos',x_min);
+            hold off; title(['Persistence of negative/positive NAO in CMIP6 SSP245 ' nao_CMIP6_scen245{k}.name]);
+            orient(h,'landscape');
+            print(h,'-append','-dpsc','negposNAOVisualization.ps','-fillpage');
+        end
+    end
+    
+    startdate = datetime(2013,1,1);
+    enddate = datetime(2100,1,1);
+    for x_min = startdate : calendarDuration(10,1,1) : enddate
+        for k = 1 : length(sev_neg_CMIP6_scen585)
+            h = figure('visible','off','units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
+            plotSevPosNegNAOs(sev_neg_CMIP6_scen585{k},size,'neg',x_min);
+            plotSevPosNegNAOs(sev_pos_CMIP6_scen585{k},size,'pos',x_min);
+            hold off; title(['Persistence of negative/positive NAO in CMIP6 SSP585 ' nao_CMIP6_scen585{k}.name]);
+            orient(h,'landscape');
+            print(h,'-append','-dpsc','negposNAOVisualization.ps','-fillpage');
+        end
+    end
+    
 end
 
 %% 5.4 Statistics
@@ -465,7 +481,7 @@ if plot_negposStatistics == true
     % settings
     max_months = 25;
     % y_min4 = 0; y_max4 = 1500;
-    x_min4 = 0; x_max4 = 10;
+    x_min4 = 1; x_max4 = 20;
     
     % negative, historical
     h1 = plotPosNegBars(max_months,sev_neg_CMIP6_hist,sev_neg_ref_dat);

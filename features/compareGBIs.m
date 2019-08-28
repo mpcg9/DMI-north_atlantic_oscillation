@@ -21,7 +21,8 @@
 %% 0.settings
 clearvars; close all; clc;
 f = filesep;
-addpath(genpath(cd), genpath(['..' f 'functions']), genpath(['..' f 'data' f 'GBI']));
+addpath(genpath(cd), genpath(['..' f 'functions']), genpath(['..' f 'data' f 'GBI']),...
+    genpath(['..' f 'data' f 'GBI_zonal']));
 
 % Plot or not
 plot_historical = true;          % plot historical data
@@ -37,7 +38,7 @@ gbi_NOAA = setfield(gbi_NOAA,'GBI',temp(:,4));
 clear temp;
 
 % ERA5 geopotential
-gbi_ERA5 = load('C:\Users\Lenovo\Documents\Master\DMI-north_atlantic_oscillation\data\GBI\ERA5\GBI_ERA5.mat');
+gbi_ERA5 = load('GBI_ERA5.mat');
 gbi_ERA5 = gbi_ERA5.GBI;
 
 % CMIP6 historical
@@ -60,7 +61,7 @@ for i = 1 : size(folderContents, 1)
     temp = load(strcat(path,folderContents(i).name));
     gbi_CMIP6_scen245{i} = temp.GBI;
     gbi_CMIP6_scen245{i}.name = strrep(folderContents(i).name,'_',' ');
-    gbi_CMIP6_scen245{i}.name = erase(gbi_CMIP6_hist{i}.name,'GBI zg Amon ');
+    gbi_CMIP6_scen245{i}.name = erase(gbi_CMIP6_scen245{i}.name,'GBI zg Amon ');
 end
 
 % CMIP6 SSP585
@@ -71,12 +72,42 @@ for i = 1 : size(folderContents, 1)
     temp = load(strcat(path,folderContents(i).name));
     gbi_CMIP6_scen585{i} = temp.GBI;
     gbi_CMIP6_scen585{i}.name = strrep(folderContents(i).name,'_',' ');
-    gbi_CMIP6_scen585{i}.name = erase(gbi_CMIP6_hist{i}.name,'GBI zg Amon ');
+    gbi_CMIP6_scen585{i}.name = erase(gbi_CMIP6_scen585{i}.name,'GBI zg Amon ');
 end
 
 %% 2. Todo: Correct future data by 
     % - seasonal mean (e.g. 12-months-filter)
     % - warming effect --> subtract mean over all longitudes
+%% 2.1 Computation of zonal mean
+% (temporal mean of the data over all longitudes in the specified latitudes)  
+
+% CMIP6 SSP245
+path = '..\data\GBI\CMIP6_zg_ssp245\';
+folderContents = dir(strcat(path, '*.mat'));
+for i = 1 : size(folderContents, 1)
+    temp = load(strcat(path,folderContents(i).name));
+    gbi_zonal_CMIP6_scen245{i} = temp.GBI;
+    gbi_zonal_CMIP6_scen245{i}.name = strrep(folderContents(i).name,'_',' ');
+    gbi_zonal_CMIP6_scen245{i}.name = erase(gbi_zonal_CMIP6_scen245{i}.name,'GBI zg Amon ');
+end
+
+for k = 1 : length(gbi_zonal_CMIP6_scen245)
+   gbi_zonal_mean_CMIP6_scen245(k) = mean(gbi_zonal_CMIP6_scen245{k}.GBI);
+end
+
+% CMIP6 SSP585
+path = '..\data\GBI\CMIP6_zg_ssp585\';
+folderContents = dir(strcat(path, '*.mat'));
+for i = 1 : size(folderContents, 1)
+    temp = load(strcat(path,folderContents(i).name));
+    gbi_zonal_CMIP6_scen585{i} = temp.GBI;
+    gbi_zonal_CMIP6_scen585{i}.name = strrep(folderContents(i).name,'_',' ');
+    gbi_zonal_CMIP6_scen585{i}.name = erase(gbi_zonal_CMIP6_scen585{i}.name,'GBI zg Amon ');
+end
+
+for k = 1 : length(gbi_zonal_CMIP6_scen585)
+   gbi_zonal_mean_CMIP6_scen585(k) = mean(gbi_zonal_CMIP6_scen585{k}.GBI);
+end
 
 %% 3. Filtering
 a = 1;

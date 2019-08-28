@@ -2,18 +2,34 @@
 % comparison of GBIs from NOAA, ERA5 and CMIP6 historical simulations
 %
 % susann.aschenneller@uni-bonn.de, 08/2019
+%
+% Contents:
+%   0.settings
+%   1. Load data
+%   2. Todo: Correct future data by 
+%   3. Filtering
+%   4. Running standard deviation
+%   5. Plots
+%       5.1 General definitions
+%       5.2 Historical simulation
+%       5.3 Historical simulation AND future scenarios 
+%       5.4 Running standard deviation
+%           5.4.1 Historical simulation
+%           5.4.2 Future scenarios
+%           5.4.3 Historical simulation AND future scenarios
 
-%% settings
+%% 0.settings
 clearvars; close all; clc;
 f = filesep;
 addpath(genpath(cd), genpath(['..' f 'functions']), genpath(['..' f 'data' f 'GBI']));
 
+% Plot or not
 plot_historical = true;          % plot historical data
 plot_future = true;              % plot historical data from future scenarios SSP245 and SSP585
 plot_stdev = true;               % running standard deviation
 plot_historicalAndFuture = true; % creates a 'messy-plot'
 
-%% load data
+%% 1. Load data
 % NOAA downloaded GBI
 temp = load('GBI1.data');
 gbi_NOAA = struct('time',datetime(temp(:,1),temp(:,2),temp(:,3),'Format','dd.MM.yyyy'));
@@ -32,6 +48,8 @@ for i = 1 : size(folderContents, 1)
     temp = load(strcat(path,folderContents(i).name));
     gbi_CMIP6_hist{i} = temp.GBI;
     gbi_CMIP6_hist{i}.name = strrep(folderContents(i).name,'_',' ');
+    gbi_CMIP6_hist{i}.name = erase(gbi_CMIP6_hist{i}.name,'GBI zg Amon ');
+    gbi_CMIP6_hist{i}.name = erase(gbi_CMIP6_hist{i}.name,' historical r1i1p1f1 gn.mat');
 end
 
 % CMIP6 SSP245
@@ -42,6 +60,7 @@ for i = 1 : size(folderContents, 1)
     temp = load(strcat(path,folderContents(i).name));
     gbi_CMIP6_scen245{i} = temp.GBI;
     gbi_CMIP6_scen245{i}.name = strrep(folderContents(i).name,'_',' ');
+    gbi_CMIP6_scen245{i}.name = erase(gbi_CMIP6_hist{i}.name,'GBI zg Amon ');
 end
 
 % CMIP6 SSP585
@@ -52,13 +71,14 @@ for i = 1 : size(folderContents, 1)
     temp = load(strcat(path,folderContents(i).name));
     gbi_CMIP6_scen585{i} = temp.GBI;
     gbi_CMIP6_scen585{i}.name = strrep(folderContents(i).name,'_',' ');
+    gbi_CMIP6_scen585{i}.name = erase(gbi_CMIP6_hist{i}.name,'GBI zg Amon ');
 end
 
-%% Todo: Correct future data by 
+%% 2. Todo: Correct future data by 
     % - seasonal mean (e.g. 12-months-filter)
     % - warming effect --> subtract mean over all longitudes
 
-%% Filtering
+%% 3. Filtering
 a = 1;
 % window size for daily data
 ws_filt = 36;
@@ -67,7 +87,30 @@ b = (1/ws_filt)*ones(1,ws_filt);
 % compute filtered time series
 gbi_NOAA_filt = filter(b,a,gbi_NOAA.GBI);
 
-%% Colors!
+%% 4. Running standard deviation
+% window size
+ws_std_daily = 60 * 30; % [days]
+ws_std_mon = 60; % [months]
+
+gbi_NOAA_stdev = movstd(gbi_NOAA.GBI,ws_std_daily);
+gbi_ERA5_stdev = movstd(gbi_ERA5.GBI,ws_std_mon);
+
+% moving standard deviations
+for k = 1 : length(gbi_CMIP6_hist)
+    gbi_CMIP6_hist_stdev{k} = movstd(gbi_CMIP6_hist{k}.GBI,ws_std_mon);
+end
+
+for k = 1 : length(gbi_CMIP6_scen245)
+    gbi_CMIP6_scen245_stdev{k} = movstd(gbi_CMIP6_scen245{k}.GBI,ws_std_mon);
+end
+
+for k = 1 : length(gbi_CMIP6_scen585)
+    gbi_CMIP6_scen585_stdev{k} = movstd(gbi_CMIP6_scen585{k}.GBI,ws_std_mon);
+end
+
+%% 5. Plots
+%% 5.1 General definitions
+% Colors!
 colors = struct('orange',[0.9290, 0.6940, 0.1250]);
 colors.darkgreen = [0, 0.5, 0];
 colors.lila = [138,43,226] ./ 255;
@@ -76,9 +119,37 @@ colors.DarkGoldenrod1 = [255,185,15] ./ 255;
 colors.MediumPurple4 = [93,71,139] ./ 255;
 colors.IndianRed = [255,106,106] ./ 255;
 colors.turquoise4 = [0,134,139] ./ 255;
+colors.blue = [0 0 1];
+colors.red = [1 0 0];
 
-%% plots: averaged geopotential height
-%  only historical (more detailed - 2 parts with 5 models per plot)
+% this is for manual line specifications in a for-loop
+line_spec{1,1} = colors.blue;
+line_spec{2,1} = colors.blue;
+line_spec{3,1} = colors.red;
+line_spec{4,1} = colors.red;
+line_spec{5,1} = colors.orange;
+line_spec{6,1} = colors.orange;
+line_spec{7,1} = colors.greenyellow;
+line_spec{8,1} = colors.greenyellow;
+line_spec{9,1} = colors.darkgreen;
+line_spec{10,1} = colors.darkgreen;
+
+line_spec{1,2} = '-';
+line_spec{2,2} = '-.';
+line_spec{3,2} = '-';
+line_spec{4,2} = '-.';
+line_spec{5,2} = '-';
+line_spec{6,2} = '-.';
+line_spec{7,2} = '-';
+line_spec{8,2} = '-.';
+line_spec{9,2} = '-';
+line_spec{10,2} = '-.';
+
+% Line Width
+lw1 = 1.2;
+
+%% 5.2 Historical simulation
+% (more detailed - 2 parts with 5 models per plot)
 if plot_historical == true
     % axis settings
     x_min = datetime(1979,1,1); x_max = datetime(2019,7,1);
@@ -117,7 +188,7 @@ if plot_historical == true
     title('GBI as a weighted mean of the geopotential height at 500hPa pressure level part 2');
     ylabel('GBI [m]'); hold off;    
 end
-
+%% 5.3 Historical simulation AND future scenarios 
 % xxxxxx improve colors in the following part
 if plot_historicalAndFuture == true % historical & future
     x_min = datetime(1979,1,1); x_max = datetime(2100,1,1);
@@ -152,43 +223,36 @@ if plot_historicalAndFuture == true % historical & future
     ylabel('GBI [m]'); hold off;   
 end
 
-%% running standard deviation
-% window size
-ws_std = 60; % [months]
 
-% moving standard deviations
-for k = 1 : length(gbi_CMIP6_hist)
-    gbi_CMIP6_hist_stdev{k} = movstd(gbi_CMIP6_hist{k}.GBI,ws_std);
-end
-
-for k = 1 : length(gbi_CMIP6_scen245)
-    gbi_CMIP6_scen245_stdev{k} = movstd(gbi_CMIP6_scen245{k}.GBI,ws_std);
-end
-
-for k = 1 : length(gbi_CMIP6_scen585)
-    gbi_CMIP6_scen585_stdev{k} = movstd(gbi_CMIP6_scen585{k}.GBI,ws_std);
-end
-
-%% plots: running standard deviation
+%% 5.4 Running standard deviation
 if plot_stdev == true
-    %  only historical
+%%  5.4.1 Historical simulation
     if plot_historical == true
-        x_min = datetime(1979,1,1);x_max = datetime(2015,1,1);
+        x_min = datetime(1979,1,1); x_max = datetime(2015,1,1);
         y_min = 120; y_max = 220;
         
-        figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
+        h = figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
         
+        % references
+        plot(gbi_NOAA.time,gbi_NOAA_stdev,'k-.','LineWidth',lw1,'DisplayName',['NOAA 30*' num2str(ws_std_mon) ' days filter']);
+        plot(gbi_ERA5.time,gbi_ERA5_stdev,'k','LineWidth',lw1,'DisplayName','ERA5');
+        
+        % CMIP6 historical
         for k = 1 : length(gbi_CMIP6_hist_stdev)
-            plot(gbi_CMIP6_hist{k}.time,gbi_CMIP6_hist_stdev{k},...
-                'DisplayName',[gbi_CMIP6_hist{k}.name]);
+            plot(gbi_CMIP6_hist{k}.time,gbi_CMIP6_hist_stdev{k},'Color',line_spec{k,1},'LineStyle',line_spec{k,2},...
+                'DisplayName',[gbi_CMIP6_hist{k}.name],'LineWidth',lw1);
         end
         
-        xlim([x_min x_max]); ylim([y_min y_max]); legend show
-        title(['GBI from CMIP6-historical - running standard deviation (' num2str(ws_std) ' months)']);
+        xlim([x_min x_max]); ylim([y_min y_max]);
+        leg = legend('show');
+        set(leg,'Location','southoutside');
+        title(['GBI from CMIP6-historical - running standard deviation (' num2str(ws_std_mon) ' months)']);
         ylabel('running standard deviation'); hold off;
         
+        orient(h,'landscape');
+        print(h,'-dpdf','GBI historical running standard deviation.pdf','-fillpage');
     end
-     %  only future
+%%  5.4.2 Future scenarios
      if plot_future == true
          x_min = datetime(2019,1,1);x_max = datetime(2100,1,1);
          y_min = 120; y_max = 220;
@@ -246,7 +310,7 @@ if plot_stdev == true
          
      end
     
-    % historical and future
+%%  5.4.3 Historical simulation AND future scenarios
     if plot_historicalAndFuture == true % historical & future   
         x_min = datetime(1979,1,1);x_max = datetime(2100,1,1);
         y_min = 120; y_max = 220;

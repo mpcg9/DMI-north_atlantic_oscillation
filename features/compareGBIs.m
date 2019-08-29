@@ -6,6 +6,7 @@
 % Contents:
 %   0.settings
 %   1. Load data
+%       1.1 Equalize timespans
 %   2. Corrections / Reductions
 %       2.1 Monthly means of daily NOAA data
 %       2.2 Reduction for annual cycle (12-months-filter)
@@ -28,11 +29,22 @@ f = filesep;
 addpath(genpath(cd), genpath(['..' f 'functions']), genpath(['..' f 'data' f 'GBI']),...
     genpath(['..' f 'data' f 'GBI_zonal']));
 
+% *** INPUT ***
+% -------------------------------------------------------------------------
+
 % Plot or not
 plot_historical = false;          % plot historical data
 plot_future = true;              % plot historical data from future scenarios SSP245 and SSP585
 plot_stdev = false;               % running standard deviation
 plot_historicalAndFuture = true; % creates a 'messy-plot'
+
+% select timespan
+day_start_hist = datetime(1979,01,01);
+day_end_hist = datetime(2014,12,01);
+day_start_fut = datetime(2080,01,01);
+day_end_fut = datetime(2100,10,01);
+
+% -------------------------------------------------------------------------
 
 %% 1. Load data
 % NOAA downloaded GBI
@@ -79,6 +91,24 @@ for i = 1 : size(folderContents, 1)
     gbi_CMIP6_scen585{i}.name = erase(gbi_CMIP6_scen585{i}.name,'GBI zg Amon ');
 end
 
+%% 1.1 Equalize timespans
+force_no_boundary_usage = false;
+
+gbi_NOAA = select_timespan( gbi_NOAA, day_start_hist, day_end_hist, force_no_boundary_usage );
+gbi_ERA5 = select_timespan( gbi_ERA5, day_start_hist, day_end_hist, force_no_boundary_usage );
+
+for k = 1 : length(gbi_CMIP6_hist)
+    gbi_CMIP6_hist{k} = select_timespan( gbi_CMIP6_hist{k}, day_start_hist, day_end_hist, force_no_boundary_usage );
+end
+
+for k = 1 : length(gbi_CMIP6_scen245)
+    gbi_CMIP6_scen245{k} = select_timespan( gbi_CMIP6_scen245{k}, day_start_fut, day_end_fut, force_no_boundary_usage );
+end
+
+for k = 1 : length(gbi_CMIP6_scen585)
+    gbi_CMIP6_scen585{k} = select_timespan( gbi_CMIP6_scen585{k}, day_start_fut, day_end_fut, force_no_boundary_usage );
+end
+
 %% 2. Corrections / Reductions
 
 %% 2.1 Monthly means of daily NOAA data
@@ -106,10 +136,12 @@ end
 
 %% 2.3 Computation of zonal mean
 % (temporal mean of the data over all longitudes in the specified latitudes)
+% 1 mean for each 12-month-period and for each model
 % for correction of changes only because of warming in the future scenarios
-% one mean-value for each model
 
 % CMIP6 SSP245
+% ... this is no real GBI, rather than an areal mean between the
+% GBI-latitudes and all longitudes around the world
 path = '..\data\GBI_zonal\CMIP6_zg_ssp245\';
 folderContents = dir(strcat(path, '*.mat'));
 for i = 1 : size(folderContents, 1)
@@ -118,7 +150,7 @@ for i = 1 : size(folderContents, 1)
 end
 
 for k = 1 : length(gbi_zonal_CMIP6_scen245)
-   gbi_zonal_mean_CMIP6_scen245(k) = mean(gbi_zonal_CMIP6_scen245{k}.GBI);
+   gbi_zonal_mean_CMIP6_scen245{k} = meanFilter(gbi_zonal_CMIP6_scen245{k},12);
 end
 
 % CMIP6 SSP585
@@ -130,17 +162,13 @@ for i = 1 : size(folderContents, 1)
 end
 
 for k = 1 : length(gbi_zonal_CMIP6_scen585)
-   gbi_zonal_mean_CMIP6_scen585(k) = mean(gbi_zonal_CMIP6_scen585{k}.GBI);
+   gbi_zonal_mean_CMIP6_scen585{k} = meanFilter(gbi_zonal_CMIP6_scen585{k},12);
 end
 
 %% 2.4 Subtraction of zonal mean from annual-filtered data
-for k = 1 : length(gbi_CMIP6_scen245_filt)
-    gbi_CMIP6_scen245_red{k} = gbi_CMIP6_scen245_filt{k} - gbi_zonal_mean_CMIP6_scen245(k);
-end
 
-for k = 1 : length(gbi_CMIP6_scen585_filt)
-    gbi_CMIP6_scen585_red{k} = gbi_CMIP6_scen585_filt{k} - gbi_zonal_mean_CMIP6_scen585(k);
-end
+gbi_CMIP6_scen245_red = subtract_annual_zonal_mean(gbi_CMIP6_scen245_filt,gbi_zonal_mean_CMIP6_scen245);
+gbi_CMIP6_scen585_red = subtract_annual_zonal_mean(gbi_CMIP6_scen585_filt,gbi_zonal_mean_CMIP6_scen585);
 
 %% 3. Running standard deviation
 % xxx think again about windows size
@@ -250,7 +278,7 @@ end
 
 %% 4.3 Future scenarios
 if plot_future == true
-    x_min = datetime(2019,1,1);x_max = datetime(2100,1,1);
+    x_min = day_start_fut; x_max = day_end_fut;
     y_min = -200; y_max = 150;
     
     % --- SSP245 ---

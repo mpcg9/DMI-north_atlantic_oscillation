@@ -32,6 +32,7 @@ addpath(genpath(cd), genpath(['..' f 'functions']), genpath(['..' f 'data' f 'na
 
 % *** INPUT ***
 % -------------------------------------------------------------------------
+% prepare_nao-Input
 season = 'winter';      % The season to be selected out of the data. You have the choice
                         % between winter (DJF), spring(MAM), summer(JJA), autumn(SON).
 extractNegPos = true;   % If negative/positive NAOs get extracted
@@ -42,6 +43,7 @@ truncate = 1979;        % Use data only after this date
 plotmean = true;        % Plot the mean over all models in the all-together-plot
                         % (historical and future projections)
 
+% Plot or not
 plot_historical = false;                % see 4.2, Plot historical data
 plot_historicalAndFuture = false;       % see 4.3, Creates a 'messy-plot'
 plot_negposBars = false;                % see 5.1, the classical bar plot of the dates of negative/positive NAOs

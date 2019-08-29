@@ -1,4 +1,4 @@
-function [nao_re,nao_trnc,nao_seas,nao_negpos] = prepareNAOs(naodat,varargin)
+function [nao_re,nao_trnc,nao_seas,nao_neg,nao_pos] = prepareNAOs(naodat,varargin)
 % [nao_re,nao_trnc,nao_seas,nao_neg,nao_pos] = prepareNAOs(naodat,varargin)
 %
 % preparation of NAO-timeseries before comparison
@@ -78,10 +78,10 @@ if varargin{5} == true
     else
         nao = nao_orig.nao;
     end
-    nao_negpos = struct('time_neg',nao.time(nao.nao <= 0));
-    nao_negpos.nao_neg = nao.nao(nao.nao <= 0);
-    nao_negpos.time_pos = nao.time(nao.nao > 0 );
-    nao_negpos.nao_pos = nao.nao(nao.nao > 0);
+    nao_neg = struct('time',nao.time(nao.nao <= 0));
+    nao_neg.nao_neg = nao.nao(nao.nao <= 0);
+    nao_pos = struct('time',nao.time(nao.nao > 0));
+    nao_pos.nao_pos = nao.nao(nao.nao > 0);
 end
 
 % fake-outputs

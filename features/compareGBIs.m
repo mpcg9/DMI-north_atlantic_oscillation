@@ -6,17 +6,21 @@
 % Contents:
 %   0.settings
 %   1. Load data
-%   2. Todo: Correct future data by 
-%   3. Filtering
-%   4. Running standard deviation
-%   5. Plots
-%       5.1 General definitions
-%       5.2 Historical simulation
-%       5.3 Historical simulation AND future scenarios 
-%       5.4 Running standard deviation
-%           5.4.1 Historical simulation
-%           5.4.2 Future scenarios
-%           5.4.3 Historical simulation AND future scenarios
+%   2. Corrections / Reductions
+%       2.1 Monthly means of daily NOAA data
+%       2.2 Reduction for annual cycle (12-months-filter)
+%       2.3 Computation of zonal mean
+%       2.4 Subtraction of zonal mean from annual-filtered data
+%   3. Running standard deviation
+%   4. Plots
+%       4.1 General definitions
+%       4.2 Historical simulation
+%       4.3 Future scenarios
+%       4.4 Historical simulation AND future scenarios 
+%       4.5 Running standard deviation
+%           4.5.1 Historical simulation
+%           4.5.2 Future scenarios
+%           4.5.3 Historical simulation AND future scenarios
 
 %% 0.settings
 clearvars; close all; clc;
@@ -25,8 +29,8 @@ addpath(genpath(cd), genpath(['..' f 'functions']), genpath(['..' f 'data' f 'GB
     genpath(['..' f 'data' f 'GBI_zonal']));
 
 % Plot or not
-plot_historical = true;          % plot historical data
-plot_future = false;              % plot historical data from future scenarios SSP245 and SSP585
+plot_historical = false;          % plot historical data
+plot_future = true;              % plot historical data from future scenarios SSP245 and SSP585
 plot_stdev = false;               % running standard deviation
 plot_historicalAndFuture = true; % creates a 'messy-plot'
 
@@ -77,10 +81,10 @@ end
 
 %% 2. Corrections / Reductions
 
-%% 2.x Monthly means of daily NOAA data
+%% 2.1 Monthly means of daily NOAA data
 gbi_NOAA_mon = meanFilter(gbi_NOAA,30);
    
-%% 2.x Reduction for seasonal/annual cycle (?) 12-months-filter
+%% 2.2 Reduction for annual cycle (12-months-filter)
 a = 1;
 % window size for monthly data
 ws = 12; % [months]
@@ -100,19 +104,17 @@ for k = 1 : length(gbi_CMIP6_scen585)
     gbi_CMIP6_scen585_filt{k} = filter(b,a,(gbi_CMIP6_scen585{k}.GBI));
 end
 
-%% 2.x Computation of zonal mean
+%% 2.3 Computation of zonal mean
 % (temporal mean of the data over all longitudes in the specified latitudes)
 % for correction of changes only because of warming in the future scenarios
 % one mean-value for each model
 
 % CMIP6 SSP245
-path = '..\data\GBI\CMIP6_zg_ssp245\';
+path = '..\data\GBI_zonal\CMIP6_zg_ssp245\';
 folderContents = dir(strcat(path, '*.mat'));
 for i = 1 : size(folderContents, 1)
     temp = load(strcat(path,folderContents(i).name));
     gbi_zonal_CMIP6_scen245{i} = temp.GBI;
-    gbi_zonal_CMIP6_scen245{i}.name = strrep(folderContents(i).name,'_',' ');
-    gbi_zonal_CMIP6_scen245{i}.name = erase(gbi_zonal_CMIP6_scen245{i}.name,'GBI zg Amon ');
 end
 
 for k = 1 : length(gbi_zonal_CMIP6_scen245)
@@ -120,23 +122,27 @@ for k = 1 : length(gbi_zonal_CMIP6_scen245)
 end
 
 % CMIP6 SSP585
-path = '..\data\GBI\CMIP6_zg_ssp585\';
+path = '..\data\GBI_zonal\CMIP6_zg_ssp585\';
 folderContents = dir(strcat(path, '*.mat'));
 for i = 1 : size(folderContents, 1)
     temp = load(strcat(path,folderContents(i).name));
-    gbi_zonal_CMIP6_scen585{i} = temp.GBI;
-    gbi_zonal_CMIP6_scen585{i}.name = strrep(folderContents(i).name,'_',' ');
-    gbi_zonal_CMIP6_scen585{i}.name = erase(gbi_zonal_CMIP6_scen585{i}.name,'GBI zg Amon ');
+    gbi_zonal_CMIP6_scen585{i} = temp.GBI;    
 end
 
 for k = 1 : length(gbi_zonal_CMIP6_scen585)
    gbi_zonal_mean_CMIP6_scen585(k) = mean(gbi_zonal_CMIP6_scen585{k}.GBI);
 end
 
-%% 2.x Subtraction of zonal mean from annual-filtered data
+%% 2.4 Subtraction of zonal mean from annual-filtered data
+for k = 1 : length(gbi_CMIP6_scen245_filt)
+    gbi_CMIP6_scen245_red{k} = gbi_CMIP6_scen245_filt{k} - gbi_zonal_mean_CMIP6_scen245(k);
+end
 
+for k = 1 : length(gbi_CMIP6_scen585_filt)
+    gbi_CMIP6_scen585_red{k} = gbi_CMIP6_scen585_filt{k} - gbi_zonal_mean_CMIP6_scen585(k);
+end
 
-%% 4. Running standard deviation
+%% 3. Running standard deviation
 % xxx think again about windows size
 % window size
 ws_std_daily = 60 * 30; % [days]
@@ -158,8 +164,8 @@ for k = 1 : length(gbi_CMIP6_scen585)
     gbi_CMIP6_scen585_stdev{k} = movstd(gbi_CMIP6_scen585{k}.GBI,ws_std_mon);
 end
 
-%% 5. Plots
-%% 5.1 General definitions
+%% 4. Plots
+%% 4.1 General definitions
 % Colors!
 colors = struct('orange',[0.9290, 0.6940, 0.1250]);
 colors.darkgreen = [0, 0.5, 0];
@@ -199,7 +205,7 @@ line_spec{10,2} = '-.';
 % Line Width
 lw1 = 1.2;
 
-%% 5.2 Historical simulation
+%% 4.2 Historical simulation
 % (more detailed - 2 parts with 5 models per plot)
 if plot_historical == true
     % axis settings
@@ -241,7 +247,68 @@ if plot_historical == true
     title('GBI as a weighted mean of the geopotential height at 500hPa pressure, 12-months-filter, level part 2');
     ylabel('GBI [m]'); hold off;    
 end
-%% 5.3 Historical simulation AND future scenarios 
+
+%% 4.3 Future scenarios
+if plot_future == true
+    x_min = datetime(2019,1,1);x_max = datetime(2100,1,1);
+    y_min = -200; y_max = 150;
+    
+    % --- SSP245 ---
+    figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
+    
+    for k = 1 : length(gbi_CMIP6_scen245_red)
+        plot(gbi_CMIP6_scen245{k}.time,gbi_CMIP6_scen245_red{k},...
+            'DisplayName',[gbi_CMIP6_scen245{k}.name]);
+    end
+    
+    xlim([x_min x_max]); ylim([y_min y_max]);
+    leg = legend('show'); set(leg,'Location','southoutside');
+    title('GBI SSP245, 12-months-filtered, corrected by zonal mean');
+    hold off;
+    
+    % --- SSP585 ---
+    figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
+    
+    for k = 1 : length(gbi_CMIP6_scen585_red)
+        plot(gbi_CMIP6_scen585{k}.time,gbi_CMIP6_scen585_red{k},...
+            'DisplayName',[gbi_CMIP6_scen585{k}.name]);
+    end
+    
+    xlim([x_min x_max]); ylim([y_min y_max]);
+    leg = legend('show'); set(leg,'Location','southoutside');
+    title('GBI SSP585, 12-months-filtered, corrected by zonal mean');
+    hold off;
+    
+    % --- SSP245 and SSP585 ---
+    figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
+    
+    for k = 1 : length(gbi_CMIP6_scen245_red)
+        if k < 2
+            plot(gbi_CMIP6_scen245{k}.time,gbi_CMIP6_scen245_red{k},'g',...
+                'DisplayName','SSP245');
+        else
+            plot(gbi_CMIP6_scen245{k}.time,gbi_CMIP6_scen245_red{k},'g',...
+                'HandleVisibility','off');
+        end
+    end
+    
+    for k = 1 : length(gbi_CMIP6_scen585_red)
+        if k < 2
+            plot(gbi_CMIP6_scen585{k}.time,gbi_CMIP6_scen585_red{k},'b',...
+                'DisplayName','SSP585');
+        else
+            plot(gbi_CMIP6_scen585{k}.time,gbi_CMIP6_scen585_red{k},'b',...
+                'HandleVisibility','off');
+        end
+    end
+    
+    xlim([x_min x_max]); ylim([y_min y_max]);
+    leg = legend('show'); set(leg,'Location','southoutside');
+    title('GBI SSP245 and SSP585, 12-months-filtered, corrected by zonal mean');
+    ylabel('running standard deviation'); hold off;    
+end
+
+%% 4.4 Historical simulation AND future scenarios 
 % xxxxxx improve colors in the following part
 if plot_historicalAndFuture == true % historical & future
     x_min = datetime(1979,1,1); x_max = datetime(2100,1,1);
@@ -250,7 +317,7 @@ if plot_historicalAndFuture == true % historical & future
     figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;    
     % references
     plot(gbi_NOAA.time,gbi_NOAA_filt,'k','DisplayName',...
-        ['NOAA (daily) download, filtered with windows size ' num2str(ws_filt)]);
+        ['NOAA (daily) download, monthly means']);
     plot(gbi_ERA5.time,gbi_ERA5.GBI,'DisplayName','ERA5 (monthly)');
     
     % all historical models
@@ -277,9 +344,9 @@ if plot_historicalAndFuture == true % historical & future
 end
 
 
-%% 5.4 Running standard deviation
+%% 4.5 Running standard deviation
 if plot_stdev == true
-%%  5.4.1 Historical simulation
+%%  4.5.1 Historical simulation
     if plot_historical == true
         x_min = datetime(1979,1,1); x_max = datetime(2015,1,1);
         y_min = 120; y_max = 220;
@@ -305,7 +372,7 @@ if plot_stdev == true
         orient(h,'landscape');
         print(h,'-dpdf','GBI historical running standard deviation.pdf','-fillpage');
     end
-%%  5.4.2 Future scenarios
+%%  5.5.2 Future scenarios
      if plot_future == true
          x_min = datetime(2019,1,1);x_max = datetime(2100,1,1);
          y_min = 120; y_max = 220;
@@ -315,7 +382,7 @@ if plot_stdev == true
          
          for k = 1 : length(gbi_CMIP6_scen245_stdev)
              plot(gbi_CMIP6_scen245{k}.time,gbi_CMIP6_scen245_stdev{k},...
-                 'DisplayName',[gbi_CMIP6_hist{k}.name]);
+                 'DisplayName',[gbi_CMIP6_scen245{k}.name]);
          end
          
          xlim([x_min x_max]); ylim([y_min y_max]); legend show
@@ -327,7 +394,7 @@ if plot_stdev == true
          
          for k = 1 : length(gbi_CMIP6_scen585_stdev)
              plot(gbi_CMIP6_scen585{k}.time,gbi_CMIP6_scen585_stdev{k},...
-                 'DisplayName',[gbi_CMIP6_hist{k}.name]);
+                 'DisplayName',[gbi_CMIP6_scen585{k}.name]);
          end
          
          xlim([x_min x_max]); ylim([y_min y_max]); legend show
@@ -363,7 +430,7 @@ if plot_stdev == true
          
      end
     
-%%  5.4.3 Historical simulation AND future scenarios
+%%  5.5.3 Historical simulation AND future scenarios
     if plot_historicalAndFuture == true % historical & future   
         x_min = datetime(1979,1,1);x_max = datetime(2100,1,1);
         y_min = 120; y_max = 220;

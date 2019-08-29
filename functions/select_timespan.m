@@ -17,9 +17,9 @@ for i = 1:length(data_fields)
     end
 end
 
-if isdatetime(day_start)
-    data = convert_times(data);
-end
+% if isdatetime(day_start)
+%     data = convert_times(data);
+% end
 
 % Select subset of time
 if bnds_time_exist && ~force_no_boundary_usage
@@ -40,18 +40,19 @@ for i = 1:length(data_fields)
             strcmp(data_fields{i}, 'lon') ||...
             strcmp(data_fields{i}, 'longitude') ||...
             strcmp(data_fields{i}, 'lon_bnds') ||...
-            strcmp(data_fields{i}, 'lon_bounds')
+            strcmp(data_fields{i}, 'lon_bounds') ||...
+            strcmp(data_fields{i}, 'name')
                 data_subset.(data_fields{i}) = data.(data_fields{i});
     elseif  strcmp(data_fields{i}, timename)
                 data_subset.(data_fields{i}) = data.(data_fields{i})(time_idx);
     elseif  bnds_time_exist && strcmp(data_fields{i}, timebndsname)
-                data_subset.(data_fields{i}) = data.(data_fields{i})(:, time_idx);
+        data_subset.(data_fields{i}) = data.(data_fields{i})(:, time_idx);
     else
-                if length(size(data.(data_fields{i}))) == 4
-                    data_subset.(data_fields{i}) = data.(data_fields{i})(:, :, :, time_idx);
-                else
-                    data_subset.(data_fields{i}) = data.(data_fields{i})(:, :, time_idx);
-                end
+        if length(size(data.(data_fields{i}))) == 4
+            data_subset.(data_fields{i}) = data.(data_fields{i})(:, :, :, time_idx);
+        elseif length(size(data.(data_fields{i}))) == 2
+            data_subset.(data_fields{i}) = data.(data_fields{i})(time_idx);
+        end
     end
 end
 end

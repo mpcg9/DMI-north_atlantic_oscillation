@@ -40,7 +40,7 @@ plot_historicalAndFuture = true; % creates a 'messy-plot'
 
 % select timespan
 day_start_hist = datetime(1979,01,01);
-day_end_hist = datetime(2014,12,01);
+day_end_hist = datetime(2014,12,31);
 day_start_fut = datetime(2080,01,01);
 day_end_fut = datetime(2100,10,01);
 
@@ -112,7 +112,7 @@ end
 %% 2. Corrections / Reductions
 
 %% 2.1 Monthly means of daily NOAA data
-gbi_NOAA_mon = meanFilter(gbi_NOAA,30);
+gbi_NOAA_mon = monthlyMeanFilter(gbi_NOAA);
    
 %% 2.2 Reduction for annual cycle (12-months-filter)
 a = 1;

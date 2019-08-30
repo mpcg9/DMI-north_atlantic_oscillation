@@ -1,4 +1,10 @@
 %% saveGBIfromERA5
+% loads ERA5 geopotential data, computes a latitude-dependet gravitational
+% acceleration, divides the geopotential by the gravitational acceleration
+% to gain the gopotential height comparable to CMIP6, computes the GBI out
+% of this and saves the results
+%
+% susann.aschenneller@uni-bonn.de, 08/2019
 
 %% settings
 clearvars; clc;
@@ -20,7 +26,10 @@ g = g45 - 0.5 * (g_poles - g_equat) * cos(2*lat*pi/180);
 data.z = data.z ./ g;
 
 % compute GBI
-GBI_temp = compute_GBI(data);
+% *** INPUT *** (see function description of 'compute_GBI')
+% (data) for the 'classical' GBI
+% (data,60,80) for all longitudes, latitudes between 60° and 80°
+GBI_temp = compute_GBI(data,60,80);
 % convert time
 refdate = datetime('01.01.1900','Format','dd.MM.yyyy');
 time = refdate + hours(data.time);

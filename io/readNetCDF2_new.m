@@ -22,7 +22,8 @@ ncid = netcdf.open(filename, 'NC_NOWRITE'); % oeffnen der Datei
 options = struct(...  % setting defaults...
     'Longitudes',false,...
     'Latitudes', false,...
-    'Plev', 0 ...
+    'Plev', 0, ...
+    'convertTime', true...
     );
 
 % read the acceptable names
@@ -111,7 +112,7 @@ if restrict_lon || restrict_lat
     if restrict_lon
         idx = find(lon_idx == 1);
         interruptions = find(diff(idx) ~= 1);
-        if length(interruptions >= 1)
+        if ~isempty(interruptions)
             length_first_stride = interruptions(1);
             stride_in_between_lengths = diff(interruptions);
             length_last_stride = length(idx) - length_first_stride + sum(stride_in_between_lengths);
@@ -211,12 +212,15 @@ for j=0:nvars-1
         end
         data.(varname) = data.(varname)*double(scaleFac) + double(addOff);
     end
-    
 %     data.(varname)=adat;
     
 end
 
 data.units = units;
 netcdf.close(ncid);
+
+if options.convertTime
+    addpath('../functions');
+    data = convert_times(data);
 end
 

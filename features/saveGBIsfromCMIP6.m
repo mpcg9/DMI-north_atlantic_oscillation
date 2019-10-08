@@ -1,5 +1,5 @@
 %% saveGBIsfromCMIP6
-% this script loads CMIP6 geopotential data, computes the GBI and saves the
+% loads CMIP6 geopotential data, computes the GBI and saves the
 % results
 %
 % susann.aschenneller@uni-bonn.de, 08/2019
@@ -17,10 +17,14 @@ folderContents = dir(strcat(path, '*.mat'));
 % s_path = 'C:\Users\Lenovo\Documents\Master\DMI-north_atlantic_oscillation\data\GBI\CMIP6_zg_historical\';
 [~, s_path] = uiputfile({'.mat', 'MATLAB binary file (*.mat)'}, 'Save plots as...');
 
-%% load, compute NAO, save
+%% load, compute GBI, save
 for i = 1:size(folderContents, 1)
     load(strcat(path,folderContents(i).name));
-    GBI_temp = compute_GBI(data);
+    
+    % *** INPUT *** (see function description of 'compute_GBI')
+    % (data) for the 'classical' GBI
+    % (data,60,80) for all longitudes, latitudes between 60° and 80°
+    GBI_temp = compute_GBI(data,60,80);
     
     data_conv = convert_times(data);
     % keep only the dates (without time)

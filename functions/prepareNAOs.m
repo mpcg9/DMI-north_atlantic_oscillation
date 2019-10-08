@@ -10,16 +10,19 @@ function [nao_re,nao_trnc,nao_seas,nao_neg,nao_pos] = prepareNAOs(naodat,varargi
 %   - replace:  values to be replaced by NaN (double)
 %   - truncate: year from which on to take the data (double)
 %   - extract:  3 months (vector e.g. [12 1 2] for december, january, february)
-%   - extract:  Pos/Neg NAO: true or false
-
-if nargin < 1
-    naodat = 'nao_1.data'; % naodat
-    varargin{1} = true; % reshape
-    varargin{2} = -99.99; % rep99
-    varargin{3} = 2000; % trnc
-    varargin{4} = [12 1 2]; % extrWinter
-    varargin{5} = true; % extrPosNeg
-end
+%   - extract:  Pos/Neg NAO: true or false + following option
+%   - extractOption:
+%       o   true: extract Pos/Neg NAO from the monthly extracted data.
+%       o   false: extract Pos/Neg NAO from any other available data.
+%
+% CAUTION.
+%   keep care of the order in which things get done.
+%       o truncate uses the already reshaped and replaced values, except
+%       this option was not chosen, then it takes the original data
+%       o extractMonths tries at first the truncated data, then the
+%       reshaped data, then the original data
+%       o extractPosNeg tries at first the truncated data, then the
+%       reshaped data, then the original data.
 
 addpath(genpath(cd), genpath(['..' filesep 'data' filesep 'nao']));
 
@@ -40,9 +43,6 @@ if isempty(varargin{3}) ~= 1
     if exist('nao_re','var') == 1
         nao = nao_re;
     else
-        %         data_fields = fieldnames(nao_orig);
-        %         fieldname = data_fields(1);
-        %         nao = nao_orig.fieldname;
         nao = nao_orig.nao;
     end
     date = datetime(varargin{3},1,1);
@@ -69,19 +69,19 @@ clear nao
 
 % extrPosNeg
 if varargin{5} == true
-    if exist('nao_seas','var') == 1
+    if varargin{6} == 1
         nao = nao_seas;
     elseif exist('nao_trnc','var') == 1
         nao = nao_trnc;
     elseif exist ('nao_re','var') == 1
         nao = nao_re;
-           else
+    else
         nao = nao_orig.nao;
     end
     nao_neg = struct('time',nao.time(nao.nao <= 0));
-    nao_neg = setfield(nao_neg,'nao',nao.nao(nao.nao <= 0));
+    nao_neg.nao_neg = nao.nao(nao.nao <= 0);
     nao_pos = struct('time',nao.time(nao.nao > 0));
-    nao_pos = setfield(nao_pos,'nao',nao.nao(nao.nao > 0));
+    nao_pos.nao_pos = nao.nao(nao.nao > 0);
 end
 
 % fake-outputs
@@ -94,11 +94,8 @@ end
 if exist('nao_seas','var') == 0
     nao_seas = [];
 end
-if exist('nao_neg','var') == 0
-    nao_neg = [];
-end
-if exist('nao_pos','var') == 0
-    nao_pos = [];
+if exist('nao_negpos','var') == 0
+    nao_negpos = [];
 end
 
 end

@@ -40,7 +40,7 @@ else
 end
 for i = 1:size(regriddedVar, 3)
     for j = 1:size(regriddedVar, 4)
-        regriddedVar(:,:,i,j) = interp2(dataFrom.(lonnameFrom), dataFrom.(latnameFrom), dataFrom.(varn)(:,:,i,j), dataTo.(lonnameTo), dataTo.(latnameTo), interpMethod);
+        regriddedVar(:,:,i,j) = interp2(dataFrom.(latnameFrom)', dataFrom.(lonnameFrom), dataFrom.(varn)(:,:,i,j), dataTo.(latnameTo)', dataTo.(lonnameTo), interpMethod);
     end
 end
 

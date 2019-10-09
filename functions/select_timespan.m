@@ -17,9 +17,9 @@ for i = 1:length(data_fields)
     end
 end
 
-% if isdatetime(day_start)
-%     data = convert_times(data);
-% end
+if isdatetime(day_start)
+    data = convert_times(data);
+end
 
 % Select subset of time
 if bnds_time_exist && ~force_no_boundary_usage
@@ -48,10 +48,12 @@ for i = 1:length(data_fields)
     elseif  bnds_time_exist && strcmp(data_fields{i}, timebndsname)
         data_subset.(data_fields{i}) = data.(data_fields{i})(:, time_idx);
     else
-        if length(size(data.(data_fields{i}))) == 4
+        if length(size(data.(data_fields{i}))) == 4 % 4D-Data with heights
             data_subset.(data_fields{i}) = data.(data_fields{i})(:, :, :, time_idx);
         elseif length(size(data.(data_fields{i}))) == 2
             data_subset.(data_fields{i}) = data.(data_fields{i})(time_idx);
+        elseif length(size(data.(data_fields{i}))) == 3
+            data_subset.(data_fields{i}) = data.(data_fields{i})(:, :, time_idx);
         end
     end
 end

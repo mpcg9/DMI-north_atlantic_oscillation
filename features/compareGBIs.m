@@ -1,5 +1,6 @@
 %% compareGBIs
-% comparison of GBIs from NOAA, ERA5 and CMIP6 historical simulations
+% comparison of GBIs from NOAA, ERA5 and CMIP6 historical
+% simulations/future scenarios SSP245 & SSP585
 %
 % susann.aschenneller@uni-bonn.de, 08/2019
 %
@@ -9,10 +10,9 @@
 %       1.1 Equalize timespans
 %   2. Corrections / Reductions
 %       2.1 Monthly means of daily NOAA data
-%       2.2 Reduction for annual cycle (12-months-filter)
-%       2.3 Computation of zonal annual mean (future scenarios)
-%       2.4 Subtraction of zonal annual mean from annual-filtered data
-%       2.5 Annual mean (for historical simulation and reference data)
+%       2.2 Computation of annual means
+%       2.3 Subtraction of annual mean from 'raw' GBI
+%       2.4 Reduction for annual cycle (12-months-filter)
 %   3. Running standard deviation
 %   4. Plots
 %       4.1 General definitions
@@ -108,7 +108,7 @@ for i = 1 : size(folderContents, 1)
 end
 
 % --- zonal "GBI" ---
-% ... this is no real GBI, than rather an areal mean between the
+% ... this is no real GBI, than rather an areal mean of data between the
 % GBI-latitudes and all longitudes around the world
 % CMIP6 SSP245
 
@@ -158,7 +158,7 @@ end
 %% 2.1 Monthly means of daily NOAA data
 gbi_NOAA_mon = monthlyMeanFilter(gbi_NOAA);
    
-%% 2.x Computation of annual means
+%% 2.2 Computation of annual means
 % 1 mean for each 12-month-period and for each model
 % especially for correction of changes only because of warming in the future scenarios
 
@@ -178,7 +178,7 @@ for k = 1 : length(gbi_zonal_CMIP6_scen585)
    gbi_zonal_mean_CMIP6_scen585{k} = meanFilter(gbi_zonal_CMIP6_scen585{k},12);
 end
 
-%% 2.x Subtraction of annual mean from 'raw' GBI
+%% 2.3 Subtraction of annual mean from 'raw' GBI
 gbi_NOAA_mon_temp{1} = gbi_NOAA_mon; gbi_mean_NOAA_temp{1} = gbi_mean_NOAA; % cheat the function...
 gbi_ERA5_temp{1} = gbi_ERA5; gbi_mean_ERA5_temp{1} = gbi_mean_ERA5; % cheat the function...
 gbi_NOAA_red = subtract_annual_zonal_mean(gbi_NOAA_mon_temp,gbi_mean_NOAA_temp);
@@ -191,7 +191,7 @@ gbi_CMIP6_scen585_red = subtract_annual_zonal_mean(gbi_CMIP6_scen585,gbi_zonal_m
 
 clear gbi_NOAA_mon_temp gbi_mean_NOAA_temp gbi_ERA5_temp gbi_mean_ERA5_temp
 
-%% 2.x Reduction for annual cycle (12-months-filter)
+%% 2.4 Reduction for annual cycle (12-months-filter)
 a = 1;
 % window size for monthly data
 ws = 12; % [months]
@@ -200,17 +200,39 @@ b = (1/ws)*ones(1,ws);
 gbi_NOAA_filt = filter(b,a,gbi_NOAA_red{1});
 gbi_ERA5_filt = filter(b,a,gbi_ERA5_red{1});
 
+% cut off the first 12 months (= filter error)
+gbi_NOAA_filt(1:12) = NaN;
+gbi_ERA5_filt(1:12) = NaN;
+
 for k = 1 : length(gbi_CMIP6_hist)
     gbi_CMIP6_hist_filt{k} = filter(b,a,(gbi_CMIP6_hist_red{k}));
+    % cut off the first 12 months (= filter error)
+    gbi_CMIP6_hist_filt{k}(1:12) = NaN;
 end
 
 for k = 1 : length(gbi_CMIP6_scen245)
     gbi_CMIP6_scen245_filt{k} = filter(b,a,(gbi_CMIP6_scen245_red{k}));
+    % cut off the first 12 months (= filter error)
+    gbi_CMIP6_scen245_filt{k}(1:12) = NaN;
 end
 
 for k = 1 : length(gbi_CMIP6_scen585)
     gbi_CMIP6_scen585_filt{k} = filter(b,a,(gbi_CMIP6_scen585_red{k}));
+    % cut off the first 12 months (= filter error)
+    gbi_CMIP6_scen585_filt{k}(1:12) = NaN;
 end
+
+%% 2.5 mean through all models
+% for historical, SSP245 and SSP585 each
+
+temp = cell2mat(gbi_CMIP6_hist_filt);
+mean_GBI_hist = mean(temp,2);
+
+temp = cell2mat(gbi_CMIP6_scen245_filt);
+mean_GBI_scen245 = mean(temp,2);
+
+temp = cell2mat(gbi_CMIP6_scen585_filt);
+mean_GBI_scen585 = mean(temp,2);
 
 %% 3. Running standard deviation
 % window size
@@ -235,53 +257,23 @@ end
 %% 4. Plots
 %% 4.1 General definitions
 % Colors!
-colors = struct('orange',[0.9290, 0.6940, 0.1250]);
-colors.darkgreen = [0, 0.5, 0];
-colors.lila = [138,43,226] ./ 255;
-colors.greenyellow = [173,255,47] ./ 255;
-colors.DarkGoldenrod1 = [255,185,15] ./ 255;
-colors.MediumPurple4 = [93,71,139] ./ 255;
-colors.IndianRed = [255,106,106] ./ 255;
-colors.turquoise4 = [0,134,139] ./ 255;
-colors.blue = [0 0 1];
-colors.red = [1 0 0];
-colors.grey = [102,102,102] ./ 255;
+colors = includeColors;
 
 % this is for manual line specifications in a for-loop
-line_spec{1,1} = colors.blue;
-line_spec{2,1} = colors.blue;
-line_spec{3,1} = colors.red;
-line_spec{4,1} = colors.red;
-line_spec{5,1} = colors.orange;
-line_spec{6,1} = colors.orange;
-line_spec{7,1} = colors.greenyellow;
-line_spec{8,1} = colors.greenyellow;
-line_spec{9,1} = colors.darkgreen;
-line_spec{10,1} = colors.darkgreen;
-
-line_spec{1,2} = '-';
-line_spec{2,2} = '-.';
-line_spec{3,2} = '-';
-line_spec{4,2} = '-.';
-line_spec{5,2} = '-';
-line_spec{6,2} = '-.';
-line_spec{7,2} = '-';
-line_spec{8,2} = '-.';
-line_spec{9,2} = '-';
-line_spec{10,2} = '-.';
+line_spec = includeLine_spec(colors);
 
 % Line Width
 lw1 = 1.2;
 
 %% 4.2 Historical simulation
-% (more detailed - 2 parts with 5 models per plot)
+%% 4.2.1 - 5 models per plot
 if plot_historical == true
     % axis settings
-    x_min = day_start_hist + month(12); x_max = day_end_hist;
+    x_min = day_start_hist + years(1); x_max = day_end_hist;
     y_min = -80; y_max = 50;  
     
     % --- Part 1 ---
-    figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
+    h = figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
     
     % plot first 5 historical models individually
     for k = 1 : 5
@@ -289,18 +281,20 @@ if plot_historical == true
             'DisplayName', gbi_CMIP6_hist{k}.name);
     end
     % references
-    plot(gbi_NOAA_mon.time,gbi_NOAA_filt,'Color',colors.grey,'LineWidth',lw1,...
-        'DisplayName','NOAA');
+%     plot(gbi_NOAA_mon.time,gbi_NOAA_filt,'Color',colors.grey,'LineWidth',lw1,...
+%         'DisplayName','NOAA');
     plot(gbi_ERA5.time,gbi_ERA5_filt,'k','LineWidth',lw1,...
         'DisplayName','ERA5');
     
     xlim([x_min x_max]); ylim([y_min y_max]);
     legend('show','Location','southoutside');
     title('GBI CMIP6 historical Part 1');
-    ylabel('GBI [m]'); hold off;
+    hold off;
+    orient(h,'landscape');
+    print(h,'-append','-dpsc','historical - 5 models per plot.ps');
     
     % --- Part 2 ---
-    figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
+    h = figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
         
     % plot second 5 historical models individually
     for k = 6 : length(gbi_CMIP6_hist_filt)
@@ -308,21 +302,49 @@ if plot_historical == true
             'DisplayName',gbi_CMIP6_hist{k}.name);
     end
     % references
-    plot(gbi_NOAA_mon.time,gbi_NOAA_filt,'Color',colors.grey,'LineWidth',lw1,...
-        'DisplayName','NOAA');
+% plot(gbi_NOAA_mon.time,gbi_NOAA_filt,'Color',colors.grey,'LineWidth',lw1,...
+%         'DisplayName','NOAA');
     plot(gbi_ERA5.time,gbi_ERA5_filt,'k','LineWidth',lw1,...
         'DisplayName','ERA5');
     
     xlim([x_min x_max]); ylim([y_min y_max]);
     legend('show','Location','southoutside');
     title('GBI CMIP6 historical Part 2');
-    ylabel('GBI [m]'); hold off;    
+    hold off;    
+    orient(h,'landscape');
+    print(h,'-append','-dpsc','historical - 5 models per plot.ps');
+end
+
+%% 4.2.2 - 1 model per plot
+if plot_historical == true
+    % axis settings
+    x_min = day_start_hist + years(1); x_max = day_end_hist;
+    y_min = -80; y_max = 50;
     
+    for k = 1 : length(gbi_CMIP6_hist_filt)
+        h = figure('visible','off','units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
+        
+        % references
+%         plot(gbi_NOAA_mon.time,gbi_NOAA_filt,'Color',colors.grey,'LineWidth',lw1,...
+%             'DisplayName','NOAA');
+        plot(gbi_ERA5.time,gbi_ERA5_filt,'k','LineWidth',lw1,...
+            'DisplayName','ERA5');
+        % CMIP6 - 1 model per plot
+        plot(gbi_CMIP6_hist{k}.time,gbi_CMIP6_hist_filt{k},'LineWidth',lw1,...
+            'Color',line_spec{k,1},'DisplayName',gbi_CMIP6_hist{k}.name);
+        
+        xlim([x_min x_max]); ylim([y_min y_max]);
+        legend('show','Location','southoutside');
+        title(['GBI CMIP6 historical ' gbi_CMIP6_hist{k}.name]);
+        hold off;
+        orient(h,'landscape');
+        print(h,'-append','-dpsc','historical - 1 model per plot.ps');
+    end    
 end
 
 %% 4.3 Future scenarios
 if plot_future == true
-    x_min = day_start_fut + month(12); x_max = day_end_fut;
+    x_min = day_start_fut + years(1); x_max = day_end_fut;
     y_min = -70; y_max = 70;
     
     % --- SSP245 ---
@@ -377,45 +399,68 @@ if plot_future == true
     xlim([x_min x_max]); ylim([y_min y_max]);
     legend('show','Location','southoutside');
     title('GBI SSP245 and SSP585');
-    ylabel('running standard deviation'); hold off;    
+    hold off;    
 end
 
 %% 4.4 Historical simulation AND future scenarios 
-% xxxxxx improve colors in the following part
 if plot_historicalAndFuture == true % historical & future
-    x_min = day_start_hist + month(12); x_max = day_end_fut;
+    x_min = day_start_hist + years(1); x_max = day_end_fut;
     y_min = -75; y_max = 75;
     
-    figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;    
-   
-    % references
-    plot(gbi_NOAA_mon.time,gbi_NOAA_filt,'Color',colors.grey,'LineWidth',lw1,...
-        'DisplayName','NOAA');
-    plot(gbi_ERA5.time,gbi_ERA5_filt,'k','LineWidth',lw1,...
-        'DisplayName','ERA5');
+    h = figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;    
     
     % all historical models
     for k = 1 : length(gbi_CMIP6_hist)
-        plot(gbi_CMIP6_hist{k}.time,gbi_CMIP6_hist_filt{k},...
-            'DisplayName',gbi_CMIP6_hist{k}.name);
-    end
+        if k > 1
+           plot(gbi_CMIP6_hist{k}.time,gbi_CMIP6_hist_filt{k},'g',...
+            'HandleVisibility','off'); % without legend
+        else
+        plot(gbi_CMIP6_hist{k}.time,gbi_CMIP6_hist_filt{k},'g',...
+            'DisplayName','historical'); % with legend
+        end
+    end    
     
     % all future models - SSP245
     for k = 1 : length(gbi_CMIP6_scen245)
-        plot(gbi_CMIP6_scen245{k}.time,gbi_CMIP6_scen245_filt{k},...
-            'DisplayName',['CMIP6 SSP245 ' gbi_CMIP6_hist{k}.name]);
+         if k > 1
+           plot(gbi_CMIP6_scen245{k}.time,gbi_CMIP6_scen245_filt{k},'c',...
+            'HandleVisibility','off'); % without legend
+        else
+        plot(gbi_CMIP6_scen245{k}.time,gbi_CMIP6_scen245_filt{k},'c',...
+            'DisplayName','SSP245'); % with legend
+        end
     end
     
     % all future models - SSP585
     for k = 1 : length(gbi_CMIP6_scen585)
-        plot(gbi_CMIP6_scen585{k}.time,gbi_CMIP6_scen585_filt{k},...
-            'DisplayName',['CMIP6 SSP585 ' gbi_CMIP6_hist{k}.name]);
+        if k > 1
+           plot(gbi_CMIP6_scen585{k}.time,gbi_CMIP6_scen585_filt{k},'b',...
+            'HandleVisibility','off'); % without legend
+        else
+        plot(gbi_CMIP6_scen585{k}.time,gbi_CMIP6_scen585_filt{k},'b',...
+            'DisplayName','SSP585'); % with legend
+        end
     end
+    
+    % references    
+    %     plot(gbi_NOAA_mon.time,gbi_NOAA_filt,'Color',colors.grey,'LineWidth',lw1,...
+    %         'DisplayName','NOAA');
+    plot(gbi_ERA5.time,gbi_ERA5_filt,'k','DisplayName','ERA5');
+    
+    % means
+    plot(gbi_CMIP6_hist{1}.time,mean_GBI_hist,'Color',colors.lila,...
+        'LineWidth',lw1,'DisplayName','mean of all used historical models');
+    plot(gbi_CMIP6_scen245{1}.time,mean_GBI_scen245,'Color','r',...
+        'LineWidth',lw1,'DisplayName','mean of all used SSP245 models');
+    plot(gbi_CMIP6_scen585{1}.time,mean_GBI_scen585,'Color',colors.orange,...
+        'LineWidth',lw1,'DisplayName','mean of all used SSP585 models');
      
     xlim([x_min x_max]); ylim([y_min y_max]);
-    legend('show','Location','westoutside');
+    legend('show','Location','southoutside');
     title('GBI - CMIP6 historical, SSP245 and SSP585');
-    ylabel('GBI [m]'); hold off;   
+    hold off;   
+    orient(h,'landscape');
+    print(h,'-append','-dpsc','hist+SSP245+SSP585 with means.ps');
 end
 
 
@@ -423,7 +468,7 @@ end
 if plot_stdev == true
 %%  4.5.1 Historical simulation
     if plot_historical == true
-        x_min = day_start_hist + month(12); x_max = day_end_hist;
+        x_min = day_start_hist + years(1); x_max = day_end_hist;
         y_min = 0; y_max = 35;
         
         h = figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;
@@ -448,7 +493,7 @@ if plot_stdev == true
     end
 %%  5.5.2 Future scenarios
      if plot_future == true
-         x_min = day_start_fut + month(12); x_max = day_end_fut;
+         x_min = day_start_fut + years(1); x_max = day_end_fut;
          y_min = 0; y_max = 35;
          
          % --- SSP245 ---
@@ -509,7 +554,7 @@ if plot_stdev == true
     
 %%  5.5.3 Historical simulation AND future scenarios
     if plot_historicalAndFuture == true % historical & future   
-         x_min = day_start_hist + year(1); x_max = day_end_fut;
+         x_min = day_start_hist + years(1); x_max = day_end_fut;
          y_min = 0; y_max = 35;
         
         figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;

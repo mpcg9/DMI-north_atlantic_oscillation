@@ -44,11 +44,11 @@ plotmean = true;        % Plot the mean over all models in the all-together-plot
                         % (historical and future projections)
 
 % Plot or not
-plot_historical = false;                % see 4.2, Plot historical data
-plot_historicalAndFuture = false;       % see 4.3, Creates a 'messy-plot'
+plot_historical = true;                % see 4.2, Plot historical data
+plot_historicalAndFuture = true;       % see 4.3, Creates a 'messy-plot'
 plot_negposBars = false;                % see 5.1, the classical bar plot of the dates of negative/positive NAOs
 plotNegPosNAOVisualization = false;     % see 5.3, NAO persistence 
-plot_negposStatistics = true;          % see 5.4, bar plots with the number of occurrences of negative/positive NAOs
+plot_negposStatistics = false;          % see 5.4, bar plots with the number of occurrences of negative/positive NAOs
 
 % select timespan
 day_start_hist = datetime(1979,01,01);

@@ -1,5 +1,6 @@
 %% compareGBIs
-% comparison of GBIs from NOAA, ERA5 and CMIP6 historical simulations
+% comparison of GBIs from NOAA, ERA5 and CMIP6 historical
+% simulations/future scenarios SSP245 & SSP585
 %
 % susann.aschenneller@uni-bonn.de, 08/2019
 %
@@ -33,10 +34,10 @@ addpath(genpath(cd), genpath(['..' f 'functions']), genpath(['..' f 'data' f 'GB
 % -------------------------------------------------------------------------
 
 % Plot or not
-plot_historical = false;          % plot historical data
+plot_historical = true;          % plot historical data
 plot_future = true;              % plot historical data from future scenarios SSP245 and SSP585
-plot_stdev = false;               % running standard deviation
-plot_historicalAndFuture = false; % creates a 'messy-plot'
+plot_stdev = true;               % running standard deviation
+plot_historicalAndFuture = true; % creates a 'messy-plot'
 
 % select timespan
 day_start_hist = datetime(1978,01,01); % one year from the start day on gets cut off 
@@ -221,6 +222,18 @@ for k = 1 : length(gbi_CMIP6_scen585)
     gbi_CMIP6_scen585_filt{k}(1:12) = NaN;
 end
 
+%% 2.5 mean through all models
+% for historical, SSP245 and SSP585 each
+
+temp = cell2mat(gbi_CMIP6_hist_filt);
+mean_GBI_hist = mean(temp,2);
+
+temp = cell2mat(gbi_CMIP6_scen245_filt);
+mean_GBI_scen245 = mean(temp,2);
+
+temp = cell2mat(gbi_CMIP6_scen585_filt);
+mean_GBI_scen585 = mean(temp,2);
+
 %% 3. Running standard deviation
 % window size
 ws_std = 60; % [months]
@@ -244,40 +257,10 @@ end
 %% 4. Plots
 %% 4.1 General definitions
 % Colors!
-colors = struct('orange',[0.9290, 0.6940, 0.1250]);
-colors.darkgreen = [0, 0.5, 0];
-colors.lila = [138,43,226] ./ 255;
-colors.greenyellow = [173,255,47] ./ 255;
-colors.DarkGoldenrod1 = [255,185,15] ./ 255;
-colors.MediumPurple4 = [93,71,139] ./ 255;
-colors.IndianRed = [255,106,106] ./ 255;
-colors.turquoise4 = [0,134,139] ./ 255;
-colors.blue = [0 0 1];
-colors.red = [1 0 0];
-colors.grey = [102,102,102] ./ 255;
+colors = includeColors;
 
 % this is for manual line specifications in a for-loop
-line_spec{1,1} = colors.blue;
-line_spec{2,1} = colors.turquoise4;
-line_spec{3,1} = colors.red;
-line_spec{4,1} = colors.grey;
-line_spec{5,1} = colors.orange;
-line_spec{6,1} = colors.IndianRed;
-line_spec{7,1} = colors.greenyellow;
-line_spec{8,1} = colors.DarkGoldenrod1;
-line_spec{9,1} = colors.darkgreen;
-line_spec{10,1} = colors.lila;
-
-line_spec{1,2} = '-';
-line_spec{2,2} = '-.';
-line_spec{3,2} = '-';
-line_spec{4,2} = '-.';
-line_spec{5,2} = '-';
-line_spec{6,2} = '-.';
-line_spec{7,2} = '-';
-line_spec{8,2} = '-.';
-line_spec{9,2} = '-';
-line_spec{10,2} = '-.';
+line_spec = includeLine_spec(colors);
 
 % Line Width
 lw1 = 1.2;
@@ -416,45 +399,68 @@ if plot_future == true
     xlim([x_min x_max]); ylim([y_min y_max]);
     legend('show','Location','southoutside');
     title('GBI SSP245 and SSP585');
-    ylabel('running standard deviation'); hold off;    
+    hold off;    
 end
 
 %% 4.4 Historical simulation AND future scenarios 
-% xxxxxx improve colors in the following part
 if plot_historicalAndFuture == true % historical & future
     x_min = day_start_hist + years(1); x_max = day_end_fut;
     y_min = -75; y_max = 75;
     
-    figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;    
-   
-    % references
-    plot(gbi_NOAA_mon.time,gbi_NOAA_filt,'Color',colors.grey,'LineWidth',lw1,...
-        'DisplayName','NOAA');
-    plot(gbi_ERA5.time,gbi_ERA5_filt,'k','LineWidth',lw1,...
-        'DisplayName','ERA5');
+    h = figure('units','normalized','outerposition',[0 0 1 1]); grid on; hold on;    
     
     % all historical models
     for k = 1 : length(gbi_CMIP6_hist)
-        plot(gbi_CMIP6_hist{k}.time,gbi_CMIP6_hist_filt{k},...
-            'DisplayName',gbi_CMIP6_hist{k}.name);
-    end
+        if k > 1
+           plot(gbi_CMIP6_hist{k}.time,gbi_CMIP6_hist_filt{k},'g',...
+            'HandleVisibility','off'); % without legend
+        else
+        plot(gbi_CMIP6_hist{k}.time,gbi_CMIP6_hist_filt{k},'g',...
+            'DisplayName','historical'); % with legend
+        end
+    end    
     
     % all future models - SSP245
     for k = 1 : length(gbi_CMIP6_scen245)
-        plot(gbi_CMIP6_scen245{k}.time,gbi_CMIP6_scen245_filt{k},...
-            'DisplayName',['CMIP6 SSP245 ' gbi_CMIP6_hist{k}.name]);
+         if k > 1
+           plot(gbi_CMIP6_scen245{k}.time,gbi_CMIP6_scen245_filt{k},'c',...
+            'HandleVisibility','off'); % without legend
+        else
+        plot(gbi_CMIP6_scen245{k}.time,gbi_CMIP6_scen245_filt{k},'c',...
+            'DisplayName','SSP245'); % with legend
+        end
     end
     
     % all future models - SSP585
     for k = 1 : length(gbi_CMIP6_scen585)
-        plot(gbi_CMIP6_scen585{k}.time,gbi_CMIP6_scen585_filt{k},...
-            'DisplayName',['CMIP6 SSP585 ' gbi_CMIP6_hist{k}.name]);
+        if k > 1
+           plot(gbi_CMIP6_scen585{k}.time,gbi_CMIP6_scen585_filt{k},'b',...
+            'HandleVisibility','off'); % without legend
+        else
+        plot(gbi_CMIP6_scen585{k}.time,gbi_CMIP6_scen585_filt{k},'b',...
+            'DisplayName','SSP585'); % with legend
+        end
     end
+    
+    % references    
+    %     plot(gbi_NOAA_mon.time,gbi_NOAA_filt,'Color',colors.grey,'LineWidth',lw1,...
+    %         'DisplayName','NOAA');
+    plot(gbi_ERA5.time,gbi_ERA5_filt,'k','DisplayName','ERA5');
+    
+    % means
+    plot(gbi_CMIP6_hist{1}.time,mean_GBI_hist,'Color',colors.lila,...
+        'LineWidth',lw1,'DisplayName','mean of all used historical models');
+    plot(gbi_CMIP6_scen245{1}.time,mean_GBI_scen245,'Color','r',...
+        'LineWidth',lw1,'DisplayName','mean of all used SSP245 models');
+    plot(gbi_CMIP6_scen585{1}.time,mean_GBI_scen585,'Color',colors.orange,...
+        'LineWidth',lw1,'DisplayName','mean of all used SSP585 models');
      
     xlim([x_min x_max]); ylim([y_min y_max]);
-    legend('show','Location','westoutside');
+    legend('show','Location','southoutside');
     title('GBI - CMIP6 historical, SSP245 and SSP585');
-    ylabel('GBI [m]'); hold off;   
+    hold off;   
+    orient(h,'landscape');
+    print(h,'-append','-dpsc','hist+SSP245+SSP585 with means.ps');
 end
 
 

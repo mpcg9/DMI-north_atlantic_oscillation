@@ -3,9 +3,9 @@
 ## Required tools for running this code
 To run most of this code, you will have to download a few additional tools:
 
-- [https://www.eoas.ubc.ca/~rich/map.html](M_Map) (Version 1.4k+) is required for all plotting routines.
-- [https://de.mathworks.com/matlabcentral/fileexchange/70338-climate-data-toolbox-for-matlab](Climate Data Toolbox) (Version 1.01+) is required for NAO index computations.
-- [https://de.mathworks.com/matlabcentral/fileexchange/34087-cbrewer-colorbrewer-schemes-for-matlab](Cbrewer) (Version 1.1.0.0+) for the preset color schemes. 
+- [M_Map](https://www.eoas.ubc.ca/~rich/map.html) (Version 1.4k+) is required for all plotting routines.
+- [Climate Data Toolbox](https://de.mathworks.com/matlabcentral/fileexchange/70338-climate-data-toolbox-for-matlab) (Version 1.01+) is required for NAO index computations.
+- [Cbrewer](https://de.mathworks.com/matlabcentral/fileexchange/34087-cbrewer-colorbrewer-schemes-for-matlab) (Version 1.1.0.0+) for the preset color schemes. 
 
 ### Where to place these?
 
@@ -20,7 +20,7 @@ This code has been written in and tested on MATLAB 2017b. Make sure to execute e
 
 There are data ingestion methods available in the folder `io`. Here's a quick guide:
 
-1. Download some data using our [https://github.com/mpcg9/DMI-north_atlantic_oscillation/blob/coding/documentation/data_download_guide.md](guide).
+1. Download some data using our [guide](https://github.com/mpcg9/DMI-north_atlantic_oscillation/blob/coding/documentation/data_download_guide.md).
 2. If it is only one file: use `readClimateData_singleFile.m`, otherwise go to the next step
 3. Create a folder for each model/scenario/variable/run combination and place the corresponding `*.nc`-files in those folders.
 4. If there are only one (or very few) folders now, use `readClimateData_singleFolder.m`. If not, use `readClimateData_tree.m` to search for data in the entire folder structure you've created (Make sure not to select a very top-level folder as it will attempt to convert all `*.nc`-files in all subdirectories).

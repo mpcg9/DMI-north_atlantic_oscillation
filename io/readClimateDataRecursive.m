@@ -26,6 +26,10 @@ for pair = reshape(varargin,2,[]) % pair is {propName;propValue}
    end
 end
 
+if startPath(end) == '/' && length(startPath) > 1
+    startPath = startPath(1:end-1);
+end
+
 %% Check if there are *.nc-Files in this folder, if so, read this folder and save mat-file
 folderContentsNc = dir(strcat(startPath, '/*.nc'));
 if size(folderContentsNc, 1) > 0

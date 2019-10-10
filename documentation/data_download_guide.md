@@ -20,12 +20,11 @@
 4. Under 'Frequency', select the sample rate (e.g. 'mon' for monthly).
 	* Often, each 'Table ID' corresponds to one certain frequency, so if you've already chosen a table ID, you may skip this step.
 5. Under 'Source ID', select the models whose output you want to download.
-6. Under 'Variant Label', selecting 'r1i1p1f1' should be fine.
+6. Under 'Variant Label', choose a specific run. If you're un certain on what to choose, selecting 'r1i1p1f1' should be fine, but keep in mind that this specific variant might not be available for every model.
     * r1 = run 1
     * i1 = initialization 1
     * p1 = physics 1
     * f1 = forcings 1
-		* depending on the selections you've made before, there may be no f1 variant.
 7. Click on 'search'
 8. If you only want to get some test data, you can now click on 'list files' and download one or two if the size is not too large.
    

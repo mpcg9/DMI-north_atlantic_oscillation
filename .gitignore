@@ -1,5 +1,12 @@
 /tools
 /binary_data
+/plot\ of\ the\ week
+/exchange\ box
+/Polar\ Cordex
+/addons
+/plots
+/toolboxes
+/data
 *.~lock.*
 *.m~
 *.asv

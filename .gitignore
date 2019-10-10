@@ -6,6 +6,7 @@
 /addons
 /plots
 /toolboxes
+/data
 *.~lock.*
 *.m~
 *.asv

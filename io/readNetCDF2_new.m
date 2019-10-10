@@ -54,7 +54,7 @@ end
 restrict_lon = length(options.Longitudes) > 1;
 restrict_lat = length(options.Latitudes) > 1;
 restrict_plev= options.Plev ~= 0;
-if restrict_lon || restrict_lat
+if restrict_lon || restrict_lat || restrict_plev
     if restrict_lon
         bnds_lon_exist = false;
         
@@ -65,6 +65,8 @@ if restrict_lon || restrict_lat
     if restrict_lat
         bnds_lat_exist = false;
     end
+    
+    % Read Longitude/Latitude/Height Grid positions
     for j = 0:nvars-1
         [varname,xtype,dimids,natts] = netcdf.inqVar(ncid,j);
         if restrict_lon && (strcmp(varname, 'lon') || strcmp(varname, 'longitude'))
@@ -77,6 +79,8 @@ if restrict_lon || restrict_lat
         elseif restrict_lon && (strcmp(varname, 'lat_bnds') || strcmp(varname, 'lat_bounds'))
             bnds_lat_exist = true;
             lat_bnds = double(netcdf.getVar(ncid, j));
+        elseif restrict_plev && (strcmpi(varname, 'Plev'))
+            plev = double(netcdf.getVar(ncid, j));
         end
     end
     
@@ -106,6 +110,9 @@ if restrict_lon || restrict_lat
         else
             lat_idx = options.Latitudes(1) <= lat & options.Latitudes(2) >= lat;
         end
+    end
+    if restrict_plev
+        plev_idx = find(options.Plev == plev);
     end
     
     % convert into start/stride values
@@ -161,7 +168,7 @@ for j=0:nvars-1
             elseif restrict_plev && (strcmp(dim, 'plev'))
                 reduce_plev_dim = length(dimids) == 4;
                 for s = 1:length(starts)
-                    starts{s}(k) = options.Plev;
+                    starts{s}(k) = plev_idx;
                     strides{s}(k)= 1;
                 end
             end

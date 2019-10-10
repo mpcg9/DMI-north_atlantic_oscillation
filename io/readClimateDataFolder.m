@@ -1,30 +1,44 @@
-%% Preparation
-clc, clear, close all;
-[file, path] = uigetfile({'*.nc', 'NetCDF2-File (*.nc)'}, 'Please select one file to read. All files will be added automatically');
-% ATTENTION! Do not use different Variables!
+function [data] = readClimateDataFolder(path, varargin)
+%% Options
+options = struct(...  % setting defaults...
+        'Longitudes', false,...
+        'Latitudes', false,...
+        'Plev', 0,...
+        'convertTime', true...
+    );
+
+% read the acceptable names
+optionNames = fieldnames(options);
+
+% count arguments
+nArgs = length(varargin);
+if round(nArgs/2)~=nArgs/2
+   error('EXAMPLE needs propertyName/propertyValue pairs')
+end
+
+for pair = reshape(varargin,2,[]) % pair is {propName;propValue}
+   inpName = pair{1}; 
+   if any(strcmp(inpName,optionNames))
+      % overwrite options. 
+      options.(inpName) = pair{2};
+   else
+      error('%s is not a recognized parameter name',inpName)
+   end
+end
 
 addpath('./scripts');
 addpath('../functions');
-folderContents = dir(strcat(path, '*.nc'));
-
-%% Settings
-use_boundaries = true;
-Bounds_lat = [20 85]; % Boundaries for latitude [in degrees]
-Bounds_lon = [-90 40]; % Boundaries for longitude [in degrees]
-Plev_query = 70000; % Set to zero if you wish to keep all height dimensions in data. If you only wish to keep one height, set this number to the corresponding plev value.
-auto_convert_time = true; % Set to true if you wish to automatically convert time specifications to datetimes. We recommend to set this to true because it will also cope for different start dates in different parts of the data.
 
 %% Ingestion
-
-% reset to defaults if no boundaries wanted.
-if ~use_boundaries
-    Bounds_lat = false;
-    Bounds_lon = false;
+if path(end) ~= '/'
+    path = [path, '/'];
 end
+
+folderContents = dir(strcat(path, '*.nc'));
 
 % Find out dimensions and variable
 dataParts = cell(size(folderContents, 1), 1);
-dataParts{1} = readNetCDF2_new(strcat(path,folderContents(1).name), 'Latitudes', Bounds_lat, 'Longitudes', Bounds_lon, 'Plev', Plev_query, 'convertTime', auto_convert_time);
+dataParts{1} = readNetCDF2_new(strcat(path,folderContents(1).name), 'Latitudes', options.Latitudes, 'Longitudes', options.Longitudes, 'Plev', options.Plev, 'convertTime', options.convertTime);
 varn = getVariableName(dataParts{1});
 dataDimensions = size(dataParts{1}.(varn));
 disp(strcat({'Read file 1/'}, num2str(size(folderContents, 1))));
@@ -34,7 +48,7 @@ numDimensions = length(dataDimensions);
 dataDimensions = dataDimensions(1:end-1);
 
 for i = 2:size(folderContents, 1)
-    dataParts{i} = readNetCDF2_new(strcat(path,folderContents(i).name), 'Latitudes', Bounds_lat, 'Longitudes', Bounds_lon, 'Plev', Plev_query, 'convertTime', auto_convert_time);
+    dataParts{i} = readNetCDF2_new(strcat(path,folderContents(i).name), 'Latitudes', options.Latitudes, 'Longitudes', options.Longitudes, 'Plev', options.Plev, 'convertTime', options.convertTime);
     dataLength = dataLength + size(dataParts{i}.(varn), numDimensions);
     disp(strcat('Read file', {' '},num2str(i),'/', num2str(size(folderContents, 1))));
 end
@@ -42,7 +56,7 @@ end
 % Preallocation
 data = dataParts{1};
 data.(varn) = zeros([dataDimensions dataLength]);
-if ~auto_convert_time
+if ~options.convertTime
     if isfield(data, 'time')
         data.time = zeros(dataLength, 1);
     end
@@ -89,14 +103,5 @@ end
 if ~issorted(data.time)
     data = sort_by_time(data);
 end
+end
 
-% data = readNetCDF2(strcat(path,folderContents(1).name));
-% if size(folderContents, 1) > 1
-%     for i = 2:size(folderContents, 1)
-%         data = concatenate_by_time(data, readNetCDF2(strcat(path,folderContents(i).name)));
-%     end
-%     data = sort_by_time(data);
-% end
-
-% Save
-uisave('data', strcat(path, file, '.mat'));

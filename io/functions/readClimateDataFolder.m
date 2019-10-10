@@ -26,8 +26,8 @@ for pair = reshape(varargin,2,[]) % pair is {propName;propValue}
    end
 end
 
-addpath('./scripts');
-addpath('../functions');
+addpath('../scripts');
+addpath('../../functions');
 
 %% Ingestion
 if path(end) ~= '/'

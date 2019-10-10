@@ -5,6 +5,7 @@ clc, clear, close all;
 
 addpath('./scripts');
 addpath('../functions');
+addpath('./functions');
 folderContents = dir(strcat(path, '*.nc'));
 
 %% Settings

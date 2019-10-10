@@ -227,7 +227,7 @@ data.units = units;
 netcdf.close(ncid);
 
 if options.convertTime
-    addpath('../functions');
+    addpath('../../functions');
     data = convert_times(data);
 end
 

@@ -8,8 +8,8 @@ clc, clear, close all;
 
 % Options
 useLonLatBounds = true;
-Longitudes = [-90 40];
-Latitudes = [20 85];
+Longitudes = [-90 40]; % Boundaries for longitude [in degrees]
+Latitudes = [20 85]; % Boundaries for latitude [in degrees]
 Plev = 0; % Set to zero if you don't want to use a Plev restriction, or to the desired height (in Pa, e.g. 70000 for 700hPa)
 
 % Select master folder

@@ -12,14 +12,14 @@ folderContents = dir(strcat(path, '*.nc'));
 use_boundaries = true;
 Bounds_lat = [20 85]; % Boundaries for latitude [in degrees]
 Bounds_lon = [-90 40]; % Boundaries for longitude [in degrees]
-Plev_query = 70000; % Set to zero if you wish to keep all height dimensions in data. If you only wish to keep one height, set this number to the corresponding plev value.
+Plev_query = 0; % Set to zero if you wish to keep all height dimensions in data. If you only wish to keep one height, set this number to the corresponding plev value.
 auto_convert_time = true; % Set to true if you wish to automatically convert time specifications to datetimes. We recommend to set this to true because it will also cope for different start dates in different parts of the data.
 
 %% Ingestion
-if useLonLatBounds
-    data = readClimateDataFolder(path, 'Longitudes', Longitudes, 'Latitudes', Latitudes, 'Plev', Plev);
+if use_boundaries
+    data = readClimateDataFolder(path, 'Longitudes', Bounds_lon, 'Latitudes', Bounds_lat, 'Plev', Plev_query);
 else
-    data = readClimateDataFolder(path, 'Plev', plev);
+    data = readClimateDataFolder(path, 'Plev', Plev_query);
 end
 
 uisave('data', strcat(path, file, '.mat'));

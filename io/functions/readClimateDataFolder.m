@@ -38,7 +38,8 @@ folderContents = dir(strcat(path, '*.nc'));
 
 % Find out dimensions and variable
 dataParts = cell(size(folderContents, 1), 1);
-dataParts{1} = readNetCDF2_new(strcat(path,folderContents(1).name), 'Latitudes', options.Latitudes, 'Longitudes', options.Longitudes, 'Plev', options.Plev, 'convertTime', options.convertTime);
+[dataParts{1}, timeConversionOptions] = readNetCDF2_new(strcat(path,folderContents(1).name), 'Latitudes', options.Latitudes, 'Longitudes', options.Longitudes, 'Plev', options.Plev, 'convertTime', options.convertTime);
+timeConversionOptions.checkIrregularities = false;
 varn = getVariableName(dataParts{1});
 dataDimensions = size(dataParts{1}.(varn));
 disp(strcat({'Read file 1/'}, num2str(size(folderContents, 1))));
@@ -48,7 +49,7 @@ numDimensions = length(dataDimensions);
 dataDimensions = dataDimensions(1:end-1);
 
 for i = 2:size(folderContents, 1)
-    dataParts{i} = readNetCDF2_new(strcat(path,folderContents(i).name), 'Latitudes', options.Latitudes, 'Longitudes', options.Longitudes, 'Plev', options.Plev, 'convertTime', options.convertTime);
+    dataParts{i} = readNetCDF2_new(strcat(path,folderContents(i).name), 'Latitudes', options.Latitudes, 'Longitudes', options.Longitudes, 'Plev', options.Plev, 'convertTime', options.convertTime, 'timeConversionOptions', timeConversionOptions);
     dataLength = dataLength + size(dataParts{i}.(varn), numDimensions);
     disp(strcat('Read file', {' '},num2str(i),'/', num2str(size(folderContents, 1))));
 end

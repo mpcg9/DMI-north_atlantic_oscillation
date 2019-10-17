@@ -1,4 +1,4 @@
-function [ data ] = readNetCDF2_new( filename, varargin )
+function [ data, usedTimeConversionOptions ] = readNetCDF2_new( filename, varargin )
 % Reads netCDF Version 3 and 4 files in Matlab
 %
 % INPUT: filename ... filename including path
@@ -23,7 +23,8 @@ options = struct(...  % setting defaults...
     'Longitudes',false,...
     'Latitudes', false,...
     'Plev', 0, ...
-    'convertTime', true...
+    'convertTime', true,...
+    'timeConversionOptions', struct...
     );
 
 % read the acceptable names
@@ -228,6 +229,8 @@ netcdf.close(ncid);
 
 if options.convertTime
     addpath('../../functions');
-    data = convert_times(data);
+    [data, usedTimeConversionOptions] = convert_times(data, options.timeConversionOptions);
+else
+    usedTimeConversionOptions = struct;
 end
 

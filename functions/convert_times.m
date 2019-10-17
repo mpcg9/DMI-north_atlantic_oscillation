@@ -1,7 +1,8 @@
-function [ data ] = convert_times( data, checkIrregularities )
+function [ data, options ] = convert_times( data, options )
 
-if nargin == 1
-    checkIrregularities = true;
+if nargin == 1 || length(fieldnames(options)) == 0
+    options = struct;
+    options.checkIrregularities = true;
 end
 
 data_fields = fieldnames(data);
@@ -47,21 +48,21 @@ else
 end
 
 % detect monthly data with irregularities
-uses30daymonths = false;
-usesnoleapyears = false;
-if ~isdatetime(data.(timename)) && checkIrregularities && strcmpi(unit, 'days')
+if ~isdatetime(data.(timename)) && options.checkIrregularities && strcmpi(unit, 'days')
+    options.uses30daymonths = false;
+    options.usesnoleapyears = false;
     if all(diff(data.(timename)) == 30) % detect 30-day months / 360-day years
-        uses30daymonths = true;
+        options.uses30daymonths = true;
     elseif length(data.(timename)) > 96 && all(diff(data.(timename)(1:12:end)) == 365) % detect omitted leap years
-        usesnoleapyears = true;
+        options.usesnoleapyears = true;
     end
 end
 
 % convert times to datetimes (if not yet done)
 if ~isdatetime(data.(timename))
-    if uses30daymonths
+    if options.uses30daymonths
         data.(timename) = starttime + calmonths(floor(data.(timename)(1) / 30)) + days(rem(data.(timename)(1), 30)) + calmonths(0:1:(length(data.(timename))-1));
-    elseif usesnoleapyears
+    elseif options.usesnoleapyears
         data.(timename) = starttime + years(floor(data.(timename)(1) / 365)) + days(rem(data.(timename)(1), 365)) + calmonths(0:1:(length(data.(timename))-1));
     elseif strcmpi(unit, 'days')
         data.(timename) = starttime + days(data.(timename));
@@ -70,9 +71,9 @@ if ~isdatetime(data.(timename))
     end
 end
 if time_bnds_exist && ~isdatetime(data.(timebndsname))
-    if uses30daymonths
+    if options.uses30daymonths
         data.(timebndsname) = starttime + calmonths(floor(data.(timebndsname)(1,1) / 30)) + days(rem(data.(timebndsname)(1,1), 30)) + [calmonths(0:1:(length(data.(timename))-1)); calmonths(1:1:length(data.(timename)))];
-    elseif usesnoleapyears
+    elseif options.usesnoleapyears
         data.(timebndsname) = starttime + years(floor(data.(timebndsname)(1,1) / 365)) + days(rem(data.(timebndsname)(1,1), 365)) + [calmonths(0:1:(length(data.(timename))-1)); calmonths(1:1:length(data.(timename)))];
     elseif strcmpi(unit, 'days')
         data.(timebndsname) = starttime + days(data.(timebndsname));

@@ -2,7 +2,7 @@ function datFilt = meanFilter(data,blocksize)
 % datFilt = meanFilter(data,blocksize)
 %
 % reduces the time series by calculating a mean for each block defined by
-% blocksize e.g. if blocksize = 10, only the median of 10 sequent elements
+% blocksize e.g. if blocksize = 10, only the mean of 10 sequent elements
 % remains
 %
 %   INPUT
